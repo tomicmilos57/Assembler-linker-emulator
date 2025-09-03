@@ -101,8 +101,8 @@ instruction:
     | SHR REGISTER ',' REGISTER           { shr($2, $4); }
     | LD operand ',' REGISTER             { ld($2, $4); }
     | ST REGISTER ',' operand             { st($2, $4); }
-    | CSRRD SYMBOL ',' REGISTER           { csrrd($2, $4); }
-    | CSRWR REGISTER ',' SYMBOL           { csrwr($2, $4); }
+    | CSRRD REGISTER ',' REGISTER           { csrrd($2, $4); }
+    | CSRWR REGISTER ',' REGISTER           { csrwr($2, $4); }
     ;
 
 directive:
