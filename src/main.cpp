@@ -8,6 +8,18 @@
 #include <list>
 #include <vector>
 
+#define LOG 1
+#if LOG
+#define debugf(format, ...) \
+    do { \
+        printf(format, ##__VA_ARGS__); \
+    } while(0)
+#else
+#define debugf(format, ...) \
+    do { \
+    } while(0)
+#endif
+
 typedef struct symbolTableEntry{
 
   int value;
@@ -58,129 +70,129 @@ typedef struct OperandNode {
 } OperandNode;
 
 void halt() {
-    printf("halt called\n");
+    debugf("halt called\n");
 }
 
 void iret() {
-    printf("iret called\n");
+    debugf("iret called\n");
 }
 
 void softint() {
-    printf("int (software interrupt) called\n");
+    debugf("int (software interrupt) called\n");
 }
 
 void ret() {
-    printf("ret called\n");
+    debugf("ret called\n");
 }
 
 void call(char *op) {
-    printf("call %s\n", op);
+    debugf("call %s\n", op);
 }
 
 void jmp(char *op) {
-    printf("jmp %s\n", op);
+    debugf("jmp %s\n", op);
 }
 
 void push(char *r) {
-    printf("push %s\n", r);
+    debugf("push %s\n", r);
 }
 
 void pop(char *r) {
-    printf("pop %s\n", r);
+    debugf("pop %s\n", r);
 }
 
 void notinst(char *r) {
-    printf("not %s\n", r);
+    debugf("not %s\n", r);
 }
 
 void xchg(char *rs, char *rd) {
-    printf("xchg %s,%s\n", rs, rd);
+    debugf("xchg %s,%s\n", rs, rd);
 }
 
 void add(char *rs, char *rd) {
-    printf("add %s,%s\n", rs, rd);
+    debugf("add %s,%s\n", rs, rd);
 }
 
 void sub(char *rs, char *rd) {
-    printf("sub %s,%s\n", rs, rd);
+    debugf("sub %s,%s\n", rs, rd);
 }
 
 void mul(char *rs, char *rd) {
-    printf("mul %s,%s\n", rs, rd);
+    debugf("mul %s,%s\n", rs, rd);
 }
 
 void divinst(char *rs, char *rd) {
-    printf("div %s,%s\n", rs, rd);
+    debugf("div %s,%s\n", rs, rd);
 }
 
 void andinst(char *rs, char *rd) {
-    printf("and %s,%s\n", rs, rd);
+    debugf("and %s,%s\n", rs, rd);
 }
 
 void orinst(char *rs, char *rd) {
-    printf("or %s,%s\n", rs, rd);
+    debugf("or %s,%s\n", rs, rd);
 }
 
 void xorinst(char *rs, char *rd) {
-    printf("xor %s,%s\n", rs, rd);
+    debugf("xor %s,%s\n", rs, rd);
 }
 
 void shl(char *rs, char *rd) {
-    printf("shl %s,%s\n", rs, rd);
+    debugf("shl %s,%s\n", rs, rd);
 }
 
 void shr(char *rs, char *rd) {
-    printf("shr %s,%s\n", rs, rd);
+    debugf("shr %s,%s\n", rs, rd);
 }
 
 void ld(char *op, char *r) {
-    printf("ld %s,%s\n", op, r);
+    debugf("ld %s,%s\n", op, r);
 }
 
 void st(char *r, char *op) {
-    printf("st %s,%s\n", r, op);
+    debugf("st %s,%s\n", r, op);
 }
 
 void csrrd(char *csr, char *r) {
-    printf("csrrd %s,%s\n", csr, r);
+    debugf("csrrd %s,%s\n", csr, r);
 }
 
 void csrwr(char *r, char *csr) {
-    printf("csrwr %s,%s\n", r, csr);
+    debugf("csrwr %s,%s\n", r, csr);
 }
 
 void beq(char *r1, char *r2, char *op) {
-    printf("beq %s,%s,%s\n", r1, r2, op);
+    debugf("beq %s,%s,%s\n", r1, r2, op);
 }
 
 void bne(char *r1, char *r2, char *op) {
-    printf("bne %s,%s,%s\n", r1, r2, op);
+    debugf("bne %s,%s,%s\n", r1, r2, op);
 }
 
 void bgt(char *r1, char *r2, char *op) {
-    printf("bgt %s,%s,%s\n", r1, r2, op);
+    debugf("bgt %s,%s,%s\n", r1, r2, op);
 }
 
 
 void test(){
-  printf("Found test\n");
+  debugf("Found test\n");
 }
 
-void add_global(char *sym)    { printf(".global %s\n", sym); }
-void add_extern(char *sym)    { printf(".extern %s\n", sym); }
-void set_section(char *name)  { printf(".section %s\n", name); }
-void add_word(char *op)       { printf(".word %s\n", op); }
-void skip_bytes(int n)        { printf(".skip %d\n", n); }
-void add_ascii(char *s)       { printf(".ascii %s\n", s); }
-void define_equ(char *sym, char *val) { printf(".equ %s, %s\n", sym, val); }
+void add_global(char *sym)    { debugf(".global %s\n", sym); }
+void add_extern(char *sym)    { debugf(".extern %s\n", sym); }
+void set_section(char *name)  { debugf(".section %s\n", name); }
+void add_word(char *op)       { debugf(".word %s\n", op); }
+void skip_bytes(int n)        { debugf(".skip %d\n", n); }
+void add_ascii(char *s)       { debugf(".ascii %s\n", s); }
+void define_equ(char *sym, char *val) { debugf(".equ %s, %s\n", sym, val); }
 void equ(char *name, OperandNode *expr_list) { 
-  printf(".equ %s", name);
+  debugf(".equ %s", name);
   for (OperandNode* node = expr_list; node; node = node->next) {
-    printf(", %s", node->val);
+    debugf(", %s", node->val);
   }
-  printf("\n");
+  debugf("\n");
 }
-void finish()                 { printf(".end\n"); }
+void finish()                 { debugf(".end\n"); }
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -194,7 +206,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   yyparse();
-  printf("Finnished parsing\n");
+  debugf("Finnished parsing\n");
 
   return 0;
 }
