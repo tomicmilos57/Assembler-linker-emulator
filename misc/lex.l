@@ -2,6 +2,7 @@
 #include "parser.tab.h"
 #include <string.h>
 #include <stdlib.h>
+  extern "C" int yylex(void);
 %}
 
 %%

@@ -4,7 +4,7 @@
 #include <string.h>
 
 void yyerror(const char *s);
-int yylex(void);
+extern "C" int yylex(void);
 
 // Instruction handlers
 void halt();
@@ -167,7 +167,7 @@ operand:
 
 operand_list:
       operand operand_list_tail {
-          OperandNode *node = malloc(sizeof(OperandNode));
+          OperandNode *node = (OperandNode*)malloc(sizeof(OperandNode));
           node->val = $1;
           node->next = $2;
           $$ = node;
@@ -176,7 +176,7 @@ operand_list:
 
 operand_list_tail:
       ',' operand operand_list_tail {
-          OperandNode *node = malloc(sizeof(OperandNode));
+          OperandNode *node = (OperandNode*)malloc(sizeof(OperandNode));
           node->val = $2;
           node->next = $3;
           $$ = node;
@@ -190,7 +190,7 @@ expr:
       term { $$ = $1; }
     | expr '+' term {
           OperandNode *t = $3;
-          char *buf = malloc(strlen(t->val) + 2);
+          char *buf = (char*)malloc(strlen(t->val) + 2);
           sprintf(buf, "+%s", t->val);
           free(t->val);
           t->val = buf;
@@ -202,7 +202,7 @@ expr:
       }
     | expr '-' term {
           OperandNode *t = $3;
-          char *buf = malloc(strlen(t->val) + 2);
+          char *buf = (char*)malloc(strlen(t->val) + 2);
           sprintf(buf, "-%s", t->val);
           free(t->val);
           t->val = buf;
@@ -216,7 +216,7 @@ expr:
 
 term:
       NUMBER {
-          OperandNode *node = malloc(sizeof(OperandNode));
+          OperandNode *node = (OperandNode*)malloc(sizeof(OperandNode));
           char buf[32];
           snprintf(buf, sizeof(buf), "%d", $1);
           node->val = strdup(buf);   // sign will be added later
@@ -224,7 +224,7 @@ term:
           $$ = node;
       }
     | SYMBOL {
-          OperandNode *node = malloc(sizeof(OperandNode));
+          OperandNode *node = (OperandNode*)malloc(sizeof(OperandNode));
           node->val = $1;
           node->next = NULL;
           $$ = node;
