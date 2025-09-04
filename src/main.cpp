@@ -24,7 +24,6 @@ typedef struct relocationEntry{
 
 } relocation;
 
-
 typedef struct Section {
 
   uint8_t array[4*1024];
@@ -35,9 +34,19 @@ typedef struct Section {
 
 } section;
 
+typedef struct toFill{
+
+  Section* section;
+  uint8_t* sectionEntry;
+  std::string symbol;
+
+} toFill;
+
 std::list<Section> Sections;
 
 std::vector<symbolTableEntry> SymbolTable;
+
+std::vector<toFill> fillTable;
 
 
 
