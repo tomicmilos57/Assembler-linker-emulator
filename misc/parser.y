@@ -143,7 +143,6 @@ directive:
 
 label:
      SYMBOL ':' {
-         printf("Label defined: %s\n", $1);
          free($1);
      }
    ;
