@@ -46,9 +46,14 @@ csrwr                      { return CSRWR; }
 .equ                       { return EQU; }
 .end                       { return END; }
 
-\$0x[0-9a-fA-F]+ {
-    yylval.num = (int)strtol(yytext + 3, NULL, 16);
-    return NUMBER;
+0[xX][0-9a-fA-F]+ {
+    yylval.num = (int)strtol(yytext, NULL, 16);
+    return NUMBER; 
+}
+
+\$[a-zA-Z_][a-zA-Z0-9_]* {
+    yylval.s = strdup(yytext + 1);
+    return SYMBOL;
 }
 
 \$[0-9]+ {

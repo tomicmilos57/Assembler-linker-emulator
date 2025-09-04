@@ -34,6 +34,11 @@ void st(char *r, char *op);
 void csrrd(char *csr, char *r);
 void csrwr(char *r, char *csr);
 
+typedef struct OperandNode {
+    char *val;
+    struct OperandNode *next;
+} OperandNode;
+
 // Directive handlers
 void add_global(char *sym);
 void add_extern(char *sym);
@@ -42,12 +47,9 @@ void add_word(char *op);
 void skip_bytes(int n);
 void add_ascii(char *s);
 void define_equ(char *sym, char *value);
+void equ(char *name, OperandNode *expr_list);
 void finish();
 
-typedef struct OperandNode {
-    char *val;
-    struct OperandNode *next;
-} OperandNode;
 %}
 
 %union {
@@ -58,11 +60,11 @@ typedef struct OperandNode {
 
 %token <s> REGISTER SYMBOL STRING
 %token <num> NUMBER
-%type <list> operand_list operand_list_tail
+%type <list> operand_list operand_list_tail expr term
 %type <s> operand
 
 %token HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR
-%token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END
+%token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END LABEL
 
 %%
 
@@ -74,6 +76,7 @@ program:
 line:
       instruction
     | directive
+    | label
     ;
 
 instruction:
@@ -130,13 +133,20 @@ directive:
     | ASCII STRING {
           add_ascii($2);
       }
-    | EQU SYMBOL ',' operand {
-          define_equ($2, $4);
+    | EQU SYMBOL ',' expr {
+          equ($2, $4);
       }
     | END {
           finish();
       }
     ;
+
+label:
+     SYMBOL ':' {
+         printf("Label defined: %s\n", $1);
+         free($1);
+     }
+   ;
 
 operand:
       NUMBER {
@@ -173,6 +183,50 @@ operand_list_tail:
       }
     ;
 
+expr:
+      term { $$ = $1; }
+    | expr '+' term {
+          OperandNode *t = $3;
+          char *buf = malloc(strlen(t->val) + 2);
+          sprintf(buf, "+%s", t->val);
+          free(t->val);
+          t->val = buf;
+
+          OperandNode *p = $1;
+          while (p->next) p = p->next;
+          p->next = t;
+          $$ = $1;
+      }
+    | expr '-' term {
+          OperandNode *t = $3;
+          char *buf = malloc(strlen(t->val) + 2);
+          sprintf(buf, "-%s", t->val);
+          free(t->val);
+          t->val = buf;
+
+          OperandNode *p = $1;
+          while (p->next) p = p->next;
+          p->next = t;
+          $$ = $1;
+      }
+    ;
+
+term:
+      NUMBER {
+          OperandNode *node = malloc(sizeof(OperandNode));
+          char buf[32];
+          snprintf(buf, sizeof(buf), "%d", $1);
+          node->val = strdup(buf);   // sign will be added later
+          node->next = NULL;
+          $$ = node;
+      }
+    | SYMBOL {
+          OperandNode *node = malloc(sizeof(OperandNode));
+          node->val = $1;
+          node->next = NULL;
+          $$ = node;
+      }
+    ;
 %%
 
 void yyerror(const char *s) {

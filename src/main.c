@@ -6,6 +6,10 @@
 
 extern void yyparse();
 extern FILE* yyin;
+typedef struct OperandNode {
+    char *val;
+    struct OperandNode *next;
+} OperandNode;
 
 void halt() {
     printf("halt called\n");
@@ -123,6 +127,13 @@ void add_word(char *op)       { printf(".word %s\n", op); }
 void skip_bytes(int n)        { printf(".skip %d\n", n); }
 void add_ascii(char *s)       { printf(".ascii %s\n", s); }
 void define_equ(char *sym, char *val) { printf(".equ %s, %s\n", sym, val); }
+void equ(char *name, OperandNode *expr_list) { 
+  printf(".equ %s", name);
+  for (OperandNode* node = expr_list; node; node = node->next) {
+    printf(", %s", node->val);
+  }
+  printf("\n");
+}
 void finish()                 { printf(".end\n"); }
 
 int main(){
