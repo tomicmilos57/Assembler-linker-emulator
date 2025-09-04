@@ -41,7 +41,7 @@ csrwr                      { return CSRWR; }
 .extern                    { return EXTERN; }
 .section                   { return SECTION; }
 .word                      { return WORD; }
-\.skip                      { return DOT_SKIP; }
+\.skip                      { return SKIP; }
 .ascii                     { return ASCII; }
 .equ                       { return EQU; }
 .end                       { return END; }
