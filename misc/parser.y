@@ -61,7 +61,7 @@ void finish();
 %token <s> REGISTER SYMBOL STRING
 %token <num> NUMBER
 %type <list> operand_list operand_list_tail expr term
-%type <s> operand
+%type <s> operand memory_operand
 
 %token HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END LABEL
@@ -160,6 +160,9 @@ operand:
     | REGISTER {
           $$ = $1;
       }
+    | memory_operand {
+          $$ = $1; 
+      }
     ;
 
 operand_list:
@@ -227,8 +230,23 @@ term:
           $$ = node;
       }
     ;
+
+memory_operand:
+      '[' REGISTER '+' NUMBER ']' {
+          char buf[64];
+          snprintf(buf, sizeof(buf), "[%s+%d]", $2, $4);
+          $$ = strdup(buf);
+      }
+    | '[' REGISTER ']' {   /* optional: just [reg] */
+          char buf[32];
+          snprintf(buf, sizeof(buf), "[%s]", $2);
+          $$ = strdup(buf);
+      }
+    ;
+
 %%
 
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
+    exit(255);
 }

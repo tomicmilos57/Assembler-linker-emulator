@@ -37,18 +37,23 @@ st                         { return ST; }
 csrrd                      { return CSRRD; }
 csrwr                      { return CSRWR; }
 
-.global                    { return GLOBAL; }
-.extern                    { return EXTERN; }
-.section                   { return SECTION; }
-.word                      { return WORD; }
+\.global                    { return GLOBAL; }
+\.extern                    { return EXTERN; }
+\.section                   { return SECTION; }
+\.word                      { return WORD; }
 \.skip                      { return SKIP; }
-.ascii                     { return ASCII; }
-.equ                       { return EQU; }
-.end                       { return END; }
+\.ascii                     { return ASCII; }
+\.equ                       { return EQU; }
+\.end                       { return END; }
 
 0[xX][0-9a-fA-F]+ {
     yylval.num = (int)strtol(yytext, NULL, 16);
     return NUMBER; 
+}
+
+\$0[xX][0-9a-fA-F]+ {
+    yylval.num = (int)strtol(yytext + 1, NULL, 16);  // skip the '$'
+    return NUMBER;
 }
 
 \$[a-zA-Z_][a-zA-Z0-9_]* {
@@ -67,7 +72,7 @@ csrwr                      { return CSRWR; }
 }
 
 \%[a-zA-Z0-9_]+ {
-    yylval.s = strdup(yytext + 1);  // remove % for internal use
+    yylval.s = strdup(yytext + 1);
     return REGISTER;
 }
 

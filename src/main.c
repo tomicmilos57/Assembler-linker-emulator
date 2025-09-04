@@ -136,11 +136,16 @@ void equ(char *name, OperandNode *expr_list) {
 }
 void finish()                 { printf(".end\n"); }
 
-int main(){
-  yyin = fopen("misc/test.txt", "r");
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    return 1;
+  }
+
+  yyin = fopen(argv[1], "r");
   if (!yyin) {
-      perror("fopen");
-      exit(-1);
+    perror("fopen");
+    return 1;
   }
   yyparse();
   printf("Finnished parsing\n");

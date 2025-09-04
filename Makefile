@@ -10,7 +10,18 @@ build:
 	gcc -o build/asembler src/main.c build/lex.yy.c build/parser.tab.c -lfl
 
 run: build
-	./build/asembler
+	./build/asembler ./misc/test.txt
+
+test: build
+	@echo "Running assembler on all test files..."
+	@find ./tests -type f | while read file; do \
+		echo "Testing $$file"; \
+		./build/asembler "$$file"; \
+		if [ $$? -ne 0 ]; then \
+			echo "Error: $$file failed"; \
+			exit 1; \
+		fi; \
+	done
 
 clean:
 	rm -rf build
