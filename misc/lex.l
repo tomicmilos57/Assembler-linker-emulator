@@ -41,7 +41,7 @@ csrwr                      { return CSRWR; }
 .extern                    { return EXTERN; }
 .section                   { return SECTION; }
 .word                      { return WORD; }
-.skip                      { return SKIP; }
+\.skip                      { return DOT_SKIP; }
 .ascii                     { return ASCII; }
 .equ                       { return EQU; }
 .end                       { return END; }
@@ -66,8 +66,8 @@ csrwr                      { return CSRWR; }
     return NUMBER;
 }
 
-%[a-zA-Z0-9_]+ {
-    yylval.s = strdup(yytext);
+\%[a-zA-Z0-9_]+ {
+    yylval.s = strdup(yytext + 1);  // remove % for internal use
     return REGISTER;
 }
 

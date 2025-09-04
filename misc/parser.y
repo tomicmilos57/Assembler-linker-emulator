@@ -64,7 +64,7 @@ void finish();
 %type <s> operand
 
 %token HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR
-%token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END LABEL
+%token GLOBAL EXTERN SECTION WORD DOT_SKIP ASCII EQU END LABEL
 
 %%
 
@@ -127,7 +127,7 @@ directive:
               add_word(p->val);
           }
       }
-    | SKIP NUMBER {
+    | DOT_SKIP NUMBER {
           skip_bytes($2);
       }
     | ASCII STRING {
