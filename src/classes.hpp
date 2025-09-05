@@ -39,6 +39,7 @@ public:
   std::string relocations_to_string() const;
 
   void insert_int(int n);
+  void insert_byte(uint8_t b);
   void insert_relocation(char* symbol, int addend);
 };
 

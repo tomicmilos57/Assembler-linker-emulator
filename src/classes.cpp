@@ -42,6 +42,11 @@ void Section::insert_int(int n){
   offset += 4;
 }
 
+void Section::insert_byte(uint8_t b){
+  array[offset] = b;
+  offset++;
+}
+
 void Section::insert_relocation(char* symbol, int addend){
 
   relocationEntry* entry = new relocationEntry;
