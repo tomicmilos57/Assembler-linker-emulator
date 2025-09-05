@@ -37,6 +37,9 @@ public:
   std::string section_to_string() const;
   std::string literals_to_string() const;
   std::string relocations_to_string() const;
+
+  void insert_int(int n);
+  void insert_relocation(char* symbol, int addend);
 };
 
 typedef struct toFill{

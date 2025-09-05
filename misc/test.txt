@@ -9,6 +9,8 @@ isr_terminal:
     push %r1
     push %r2
 
+    .word 3, a, 5
+
     ld 0xFFFFFF04, %r1 # term_in
     ld $121, %r2 # character_offset
     bne %r1, %r2, skip

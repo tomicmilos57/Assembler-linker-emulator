@@ -10,15 +10,31 @@ void add_global(char *sym) {
   symtable.createEntry(0, false, sym);
 }
 
-void add_extern(char *sym)    { debugf(".extern %s\n", sym); }
+void add_extern(char *sym)    { 
+  debugf(".extern %s\n", sym);
+  symtable.createEntry(0, true, sym);
+}
 
 void set_section(char *name)  { 
   debugf(".section %s\n", name);
   Section* sec = new Section(std::string(name));
   sections.add_section(sec);
+  symtable.createEntry(0, false, name);
 }
 
-void add_word(char *op)       { debugf(".word %s\n", op); }
+void add_word(int n) {
+  debugf(".word_int %d\n", n);
+  sections.getCurrentSection()->insert_int(n);
+}
+
+void add_word(char *s){
+  debugf(".word_sym %s\n", s);
+
+  sections.getCurrentSection()->insert_relocation(s, 0);
+
+  sections.getCurrentSection()->insert_int(0);
+}
+
 void skip_bytes(int n)        { debugf(".skip %d\n", n); }
 void add_ascii(char *s)       { debugf(".ascii %s\n", s); }
 void define_equ(char *sym, char *val) { debugf(".equ %s, %s\n", sym, val); }

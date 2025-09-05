@@ -37,23 +37,40 @@ std::string SymbolTable::to_string() const {
   return out.str();
 }
 
+void Section::insert_int(int n){
+  *(uint32_t*)&array[offset] = n;
+  offset += 4;
+}
+
+void Section::insert_relocation(char* symbol, int addend){
+
+  relocationEntry* entry = new relocationEntry;
+
+  entry->offset = this->offset;
+  entry->symbol = std::string(symbol);
+  entry->addend = addend;
+
+  list_of_relocations.push_back(entry);
+
+}
+
 std::string Section::section_to_string() const {
   std::ostringstream out;
 
   out << "#." << name << "\n";
 
-  for (uint32_t i = 0; i < size; i++) {
+  for (uint32_t i = 0; i < offset; i++) {
     out << std::hex << std::setfill('0') << std::setw(2)
       << static_cast<int>(array[i]);
 
-    if ((i % 16) != 15 && i + 1 < size)
+    if ((i % 16) != 15 && i + 1 < offset)
       out << " ";
 
     if ((i % 16) == 15)
       out << "\n";
   }
 
-  if (size % 16 != 0)
+  if (offset % 16 != 0)
     out << "\n";
 
   return out.str();

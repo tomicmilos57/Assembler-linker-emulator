@@ -34,21 +34,22 @@ void st(char *r, char *op);
 void csrrd(char *csr, char *r);
 void csrwr(char *r, char *csr);
 
-typedef struct OperandNode {
-    char *val;
-    struct OperandNode *next;
-} OperandNode;
-
 // Directive handlers
 void add_global(char *sym);
 void add_extern(char *sym);
 void set_section(char *name);
-void add_word(char *op);
+void add_word(int n);
+void add_word(char *s);
 void skip_bytes(int n);
 void add_ascii(char *s);
 void define_equ(char *sym, char *value);
-void equ(char *name, OperandNode *expr_list);
+void equ(char *name, struct OperandNode *expr_list);
 void finish();
+
+typedef struct OperandNode {
+    char *val;
+    struct OperandNode *next;
+} OperandNode;
 
 %}
 
@@ -104,8 +105,8 @@ instruction:
     | SHR REGISTER ',' REGISTER           { shr($2, $4); }
     | LD operand ',' REGISTER             { ld($2, $4); }
     | ST REGISTER ',' operand             { st($2, $4); }
-    | CSRRD REGISTER ',' REGISTER           { csrrd($2, $4); }
-    | CSRWR REGISTER ',' REGISTER           { csrwr($2, $4); }
+    | CSRRD REGISTER ',' REGISTER         { csrrd($2, $4); }
+    | CSRWR REGISTER ',' REGISTER         { csrwr($2, $4); }
     ;
 
 directive:
@@ -122,10 +123,8 @@ directive:
     | SECTION SYMBOL {
           set_section($2);
       }
-    | WORD operand_list {
-          for (OperandNode *p = $2; p; p = p->next) {
-              add_word(p->val);
-          }
+    | WORD word_list {
+          /* handled in word_list rules */
       }
     | SKIP NUMBER {
           skip_bytes($2);
@@ -139,6 +138,19 @@ directive:
     | END {
           finish();
       }
+    ;
+
+word_list:
+      NUMBER { add_word($1); } word_list_rest
+    | SYMBOL { add_word($1); } word_list_rest
+    | STRING { add_word($1); } word_list_rest
+    ;
+
+word_list_rest:
+      ',' NUMBER { add_word($2); } word_list_rest
+    | ',' SYMBOL { add_word($2); } word_list_rest
+    | ',' STRING { add_word($2); } word_list_rest
+    |
     ;
 
 label:
@@ -218,7 +230,7 @@ term:
           OperandNode *node = (OperandNode*)malloc(sizeof(OperandNode));
           char buf[32];
           snprintf(buf, sizeof(buf), "%d", $1);
-          node->val = strdup(buf);   // sign will be added later
+          node->val = strdup(buf);
           node->next = NULL;
           $$ = node;
       }
@@ -236,7 +248,7 @@ memory_operand:
           snprintf(buf, sizeof(buf), "[%s+%d]", $2, $4);
           $$ = strdup(buf);
       }
-    | '[' REGISTER ']' {   /* optional: just [reg] */
+    | '[' REGISTER ']' {
           char buf[32];
           snprintf(buf, sizeof(buf), "[%s]", $2);
           $$ = strdup(buf);
