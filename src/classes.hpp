@@ -38,7 +38,7 @@ public:
   std::string literals_to_string() const;
   std::string relocations_to_string() const;
 
-  void insert_int(int n);
+  void insert_int(uint32_t n);
   void insert_byte(uint8_t b);
   void insert_relocation(char* symbol, int addend);
 };

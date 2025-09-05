@@ -37,7 +37,7 @@ std::string SymbolTable::to_string() const {
   return out.str();
 }
 
-void Section::insert_int(int n){
+void Section::insert_int(uint32_t n){
   *(uint32_t*)&array[offset] = n;
   offset += 4;
 }
