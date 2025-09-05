@@ -1,5 +1,17 @@
 #include "classes.hpp"
 
+void SymbolTable::createEntry(int value, bool local, char* symbol){
+
+  symbolTableEntry* entry = new symbolTableEntry;
+
+  entry->value = value;
+  entry->local = local;
+  entry->symbol = std::string(symbol);
+
+  list.push_back(entry);
+
+}
+
 std::string SymbolTable::to_string() const {
   std::ostringstream out;
 
@@ -10,16 +22,16 @@ std::string SymbolTable::to_string() const {
     const auto &entry = list[i];
 
     out << std::dec << i << ": "
-      << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << entry.value
+      << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << entry->value
       << " "
       << std::dec << 0
       << " ";
 
     out << "NOTYP ";
 
-    out << (entry.local ? "LOC " : "GLOB ");
+    out << (entry->local ? "LOC " : "GLOB ");
 
-    out << entry.symbol << "\n";
+    out << entry->symbol << "\n";
   }
 
   return out.str();
@@ -86,9 +98,9 @@ std::string Section::relocations_to_string() const {
   out << "Offset  Symbol  Addend\n";
 
   for (const auto &rel : list_of_relocations) {
-    out << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << rel.offset << " ";
-    out << rel.symbol << " ";
-    out << std::dec << rel.addend << "\n";
+    out << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << rel->offset << " ";
+    out << rel->symbol << " ";
+    out << std::dec << rel->addend << "\n";
   }
 
   return out.str();
@@ -116,14 +128,14 @@ std::string FillTable::to_string() const {
     const auto &entry = list[i];
 
     uintptr_t offset = 0;
-    if (entry.section && entry.sectionEntry) {
-      offset = static_cast<uintptr_t>(entry.sectionEntry - entry.section->array);
+    if (entry->section && entry->sectionEntry) {
+      offset = static_cast<uintptr_t>(entry->sectionEntry - entry->section->array);
     }
 
     out << std::setw(3) << std::dec << i << " ";
-    out << std::setw(8) << (entry.section ? entry.section->name : "NULL") << " ";
+    out << std::setw(8) << (entry->section ? entry->section->name : "NULL") << " ";
     out << "0x" << std::setw(6) << std::setfill('0') << std::hex << offset << " ";
-    out << entry.symbol << "\n";
+    out << entry->symbol << "\n";
   }
 
   return out.str();

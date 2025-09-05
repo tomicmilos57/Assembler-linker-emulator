@@ -5,7 +5,11 @@ extern SymbolTable symtable;
 extern FillTable filltable;
 
 
-void add_global(char *sym)    { debugf(".global %s\n", sym); }
+void add_global(char *sym) {
+  debugf(".global %s\n", sym);
+  symtable.createEntry(0, false, sym);
+}
+
 void add_extern(char *sym)    { debugf(".extern %s\n", sym); }
 
 void set_section(char *name)  { 
