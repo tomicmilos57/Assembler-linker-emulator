@@ -1,62 +1,5 @@
 #include "defs.hpp"
 
-#define SP 14
-#define PC 15
-
-#define R0 0
-#define R1 1
-#define R2 2
-#define R3 3
-#define R4 4
-#define R5 5
-#define R6 6
-#define R7 7
-#define R8 8
-#define R9 9
-#define R10 10
-#define R11 11
-#define R12 12
-#define R13 13
-
-#define STATUS 0
-#define HANDLER 1
-#define CAUSE 2
-
-#define HALT 0x00  // OC=0x0, MOD=0x0
-#define INT  0x10  // OC=0x1, MOD=0x0
-#define CALL_AB_D   0x20  // OC=0x2, MOD=0x0  -> pc <= gpr[A] + gpr[B] + D
-#define CALL_MEM_AB_D 0x21 // OC=0x2, MOD=0x1 -> pc <= mem32[gpr[A]+gpr[B]+D]
-#define JMP_AB_D      0x30 // OC=0x3, MOD=0x0  -> pc <= gpr[A] + D
-#define JEQ_AB_C_D    0x31 // OC=0x3, MOD=0x1  -> if(gpr[B]==gpr[C]) pc <= gpr[A]+D
-#define JNE_AB_C_D    0x32 // OC=0x3, MOD=0x2  -> if(gpr[B]!=gpr[C]) pc <= gpr[A]+D
-#define JGT_AB_C_D    0x33 // OC=0x3, MOD=0x3  -> if(gpr[B] signed > gpr[C]) pc <= gpr[A]+D
-#define JMP_MEM_AB_D  0x38 // OC=0x3, MOD=0x8  -> pc <= mem32[gpr[A]+D]
-#define JEQ_MEM_AB_C_D 0x39 // OC=0x3, MOD=0x9 -> if(gpr[B]==gpr[C]) pc<=mem32[gpr[A]+D]
-#define JNE_MEM_AB_C_D 0x3A // OC=0x3, MOD=0xA -> if(gpr[B]!=gpr[C]) pc<=mem32[gpr[A]+D]
-#define JGT_MEM_AB_C_D 0x3B // OC=0x3, MOD=0xB -> if(gpr[B] signed> gpr[C]) pc<=mem32[gpr[A]+D]
-#define XCHG_BC 0x40 // OC=0x4, MOD=0x0
-#define ADD 0x50  // OC=0x5, MOD=0x0
-#define SUB 0x51  // OC=0x5, MOD=0x1
-#define MUL 0x52  // OC=0x5, MOD=0x2
-#define DIV 0x53  // OC=0x5, MOD=0x3
-#define NOT 0x60  // OC=0x6, MOD=0x0
-#define AND 0x61  // OC=0x6, MOD=0x1
-#define OR  0x62  // OC=0x6, MOD=0x2
-#define XOR 0x63  // OC=0x6, MOD=0x3
-#define SHL 0x70  // OC=0x7, MOD=0x0
-#define SHR 0x71  // OC=0x7, MOD=0x1
-#define STORE_AB_C_D      0x80 // OC=0x8, MOD=0x0 -> mem32[gpr[A]+gpr[B]+D] <= gpr[C]
-#define STORE_MEM_AB_C_D  0x82 // OC=0x8, MOD=0x2 -> mem32[mem32[gpr[A]+gpr[B]+D]] <= gpr[C]
-#define STORE_INC_A_C_D   0x81 // OC=0x8, MOD=0x1 -> gpr[A]+=D; mem32[gpr[A]]<=gpr[C]
-#define LOAD_CSR_B        0x90 // OC=0x9, MOD=0x0 -> gpr[A] <= csr[B]
-#define LOAD_GPR_B_D      0x91 // OC=0x9, MOD=0x1 -> gpr[A] <= gpr[B]+D
-#define LOAD_MEM_BC_D     0x92 // OC=0x9, MOD=0x2 -> gpr[A] <= mem32[gpr[B]+gpr[C]+D]
-#define LOAD_MEM_B_INC_D  0x93 // OC=0x9, MOD=0x3 -> gpr[A] <= mem32[gpr[B]]; gpr[B]+=D
-#define LOAD_CSR_A_B      0x94 // OC=0x9, MOD=0x4 -> csr[A] <= gpr[B]
-#define LOAD_CSR_A_B_OR_D 0x95 // OC=0x9, MOD=0x5 -> csr[A] <= csr[B] | D
-#define LOAD_CSR_MEM_BC_D 0x96 // OC=0x9, MOD=0x6 -> csr[A] <= mem32[gpr[B]+gpr[C]+D]
-#define LOAD_CSR_MEM_B_INC 0x97 // OC=0x9, MOD=0x7 -> csr[A] <= mem32[gpr[B]]; gpr[B]+=D
-
 extern Sections sections;
 extern SymbolTable symtable;
 extern FillTable filltable;
@@ -72,30 +15,6 @@ void insert_instruction(uint32_t instruction, uint32_t regA, uint32_t regB, uint
 
   debugf("inst: 0x%x\n", i_instruction | i_regA | i_regB | i_regC | i_disp);
   sections.getCurrentSection()->insert_int(i_instruction | i_regA | i_regB | i_regC | i_disp);
-}
-
-void insert_symbol_jumps(char* sym, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC){
-
-  std::string str = std::string(sym);
-  bool found = symtable.map.contains(str);
-
-  if (found){
-
-    symbolTableEntry* entry = symtable.map.at(str);
-
-    if (entry->found){
-      insert_instruction(instruction, regA, regB, regC, entry->value);
-    } else{
-      filltable.createEntry(sym, instruction, regA, regB, regC, entry->value);
-      insert_instruction(0, 0, 0, 0, 0);
-    }
-
-  } else{
-    symtable.createEntry(0, false, true, sym);
-    filltable.createEntry(sym, instruction, regA, regB, regC, 0);
-    insert_instruction(0, 0, 0, 0, 0);
-  }
-
 }
 
 int get_reg(char* chars){
@@ -273,84 +192,4 @@ void csrwr(char *r, char *csr) {
   int reg = get_reg(r);
   int regcsr = get_csr(csr);
   insert_instruction(LOAD_CSR_A_B, regcsr, reg, 0, 0);
-}
-
-void call_literal(int val) {
-  debugf("call %d\n", val);
-}
-
-void call_symbol(char *sym) {
-  debugf("call %s\n", sym);
-}
-
-void jmp_literal(int val) {
-  debugf("jmp %d\n", val);
-}
-
-void jmp_symbol(char *sym) {
-  debugf("jmp %s\n", sym);
-
-  insert_symbol_jumps(sym, JMP_AB_D, R0, 0, 0);
-}
-
-void beq_literal(char *r1, char *r2, int val) {
-  debugf("beq %s,%s,%d\n", r1, r2, val);
-}
-
-void beq_symbol(char *r1, char *r2, char *sym) {
-  debugf("beq %s,%s,%s\n", r1, r2, sym);
-
-  int reg1 = get_reg(r1);
-  int reg2 = get_reg(r2);
-  insert_symbol_jumps(sym, JEQ_AB_C_D, R0, reg1, reg2);
-}
-
-void bne_literal(char *r1, char *r2, int val) {
-  debugf("bne %s,%s,%d\n", r1, r2, val);
-}
-
-void bne_symbol(char *r1, char *r2, char *sym) {
-  debugf("bne %s,%s,%s\n", r1, r2, sym);
-
-
-  int reg1 = get_reg(r1);
-  int reg2 = get_reg(r2);
-  insert_symbol_jumps(sym, JNE_AB_C_D, R0, reg1, reg2);
-}
-
-void bgt_literal(char *r1, char *r2, int val) {
-  debugf("bgt %s,%s,%d\n", r1, r2, val);
-}
-
-void bgt_symbol(char *r1, char *r2, char *sym) {
-  debugf("bgt %s,%s,%s\n", r1, r2, sym);
-
-
-  int reg1 = get_reg(r1);
-  int reg2 = get_reg(r2);
-  insert_symbol_jumps(sym, JGT_AB_C_D, R0, reg1, reg2);
-}
-
-void ld_literal(int val, char *r) {
-  debugf("ld %d,%s\n", val, r);
-}
-
-void ld_symbol(char *sym, char *r) {
-  debugf("ld %s,%s\n", sym, r);
-}
-
-void ld_memory(char *mem, char *r) {
-  debugf("ld %s,%s\n", mem, r);
-}
-
-void st_literal(char *r, int val) {
-  debugf("st %s,%d\n", r, val);
-}
-
-void st_symbol(char *r, char *sym) {
-  debugf("st %s,%s\n", r, sym);
-}
-
-void st_memory(char *r, char *mem) {
-  debugf("st %s,%s\n", r, mem);
 }
