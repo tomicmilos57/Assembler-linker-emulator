@@ -9,7 +9,7 @@ handler:
     ld $2, %r2
     beq %r1, %r2, handle_timer
     ld $3, %r2
-    beq %r1, %r2, handle_terminal
+    beq %r1, %r2, 0xF0000000
 finish:
     pop %r2
     pop %r1

@@ -34,12 +34,27 @@ void orinst(char *rs, char *rd);
 void xorinst(char *rs, char *rd);
 void shl(char *rs, char *rd);
 void shr(char *rs, char *rd);
-void ld_literal(int val, char *r);
-void ld_symbol(char *sym, char *r);
-void ld_memory(char *mem, char *r);
-void st_literal(char *r, int val);
-void st_symbol(char *r, char *sym);
-void st_memory(char *r, char *mem);
+
+// Load variants
+void ld_abs_literal(int val, char *r);
+void ld_abs_symbol(char *sym, char *r);
+void ld_dir_literal(int val, char *r);
+void ld_dir_symbol(char *sym, char *r);
+void ld_reg(char *reg, char *r);
+void ld_mem_reg(char *reg, char *r);
+void ld_mem_reg_off_literal(char *reg, int val, char *r);
+void ld_mem_reg_off_symbol(char *reg, char *sym, char *r);
+
+// Store variants
+void st_abs_literal(char *r, int val);
+void st_abs_symbol(char *r, char *sym);
+void st_dir_literal(char *r, int val);
+void st_dir_symbol(char *r, char *sym);
+void st_reg(char *r, char *reg);
+void st_mem_reg(char *r, char *reg);
+void st_mem_reg_off_literal(char *r, char *reg, int val);
+void st_mem_reg_off_symbol(char *r, char *reg, char *sym);
+
 void csrrd(char *csr, char *r);
 void csrwr(char *r, char *csr);
 
@@ -118,12 +133,25 @@ instruction:
     | XOR REGISTER ',' REGISTER           { xorinst($2, $4); }
     | SHL REGISTER ',' REGISTER           { shl($2, $4); }
     | SHR REGISTER ',' REGISTER           { shr($2, $4); }
-    | LD literal ',' REGISTER             { ld_literal($2, $4); }
-    | LD SYMBOL ',' REGISTER              { ld_symbol($2, $4); }
-    | LD memory_operand ',' REGISTER      { ld_memory($2, $4); }
-    | ST REGISTER ',' literal             { st_literal($2, $4); }
-    | ST REGISTER ',' SYMBOL              { st_symbol($2, $4); }
-    | ST REGISTER ',' memory_operand      { st_memory($2, $4); }
+
+    | LD '$' NUMBER ',' REGISTER            { ld_abs_literal($3, $5); }
+    | LD '$' SYMBOL ',' REGISTER            { ld_abs_symbol($3, $5); }
+    | LD NUMBER ',' REGISTER                { ld_dir_literal($2, $4); }
+    | LD SYMBOL ',' REGISTER                { ld_dir_symbol($2, $4); }
+    | LD REGISTER ',' REGISTER              { ld_reg($2, $4); }
+    | LD '[' REGISTER ']' ',' REGISTER      { ld_mem_reg($3, $6); }
+    | LD '[' REGISTER '+' NUMBER ']' ',' REGISTER { ld_mem_reg_off_literal($3, $5, $8); }
+    | LD '[' REGISTER '+' SYMBOL ']' ',' REGISTER { ld_mem_reg_off_symbol($3, $5, $8); }
+
+    | ST REGISTER ',' '$' NUMBER            { st_abs_literal($2, $5); }
+    | ST REGISTER ',' '$' SYMBOL            { st_abs_symbol($2, $5); }
+    | ST REGISTER ',' NUMBER                { st_dir_literal($2, $4); }
+    | ST REGISTER ',' SYMBOL                { st_dir_symbol($2, $4); }
+    | ST REGISTER ',' REGISTER              { st_reg($2, $4); }
+    | ST REGISTER ',' '[' REGISTER ']'      { st_mem_reg($2, $5); }
+    | ST REGISTER ',' '[' REGISTER '+' NUMBER ']' { st_mem_reg_off_literal($2, $5, $7); }
+    | ST REGISTER ',' '[' REGISTER '+' SYMBOL ']' { st_mem_reg_off_symbol($2, $5, $7); }
+
     | CSRRD REGISTER ',' REGISTER         { csrrd($2, $4); }
     | CSRWR REGISTER ',' REGISTER         { csrwr($2, $4); }
     ;

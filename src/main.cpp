@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
 
   yyparse();
-  print_everything();
+  //print_everything();
   printf("Finnished parsing\n");
 
   return 0;

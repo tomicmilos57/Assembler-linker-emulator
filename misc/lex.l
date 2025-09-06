@@ -93,6 +93,7 @@ csrwr                      { return CSRWR; }
 \[         { return '['; }
 \]         { return ']'; }
 \+         { return '+'; }
+\$         { return '$'; }
 
 .          { return *yytext; }
 
