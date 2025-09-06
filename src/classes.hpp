@@ -2,6 +2,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <unordered_map>
 
 #include <sstream>
 #include <iomanip>
@@ -10,6 +11,7 @@ typedef struct symbolTableEntry{
 
   int value;
   bool local;
+  bool found;
   std::string symbol;
 
 } symbolTableEntry;
@@ -46,8 +48,14 @@ public:
 typedef struct toFill{
 
   Section* section;
-  uint8_t* sectionEntry;
+  uint32_t offset;
   std::string symbol;
+
+  uint32_t instruction;
+  uint32_t regA;
+  uint32_t regB;
+  uint32_t regC;
+  uint32_t disp;
 
 } toFill;
 
@@ -67,15 +75,18 @@ public:
 
 class SymbolTable {
 public:
-  void createEntry(int value, bool local, char* symbol);
+  void createEntry(int value, bool found, bool local, char* symbol);
 
   std::vector<symbolTableEntry*> list;
+  std::unordered_map<std::string, symbolTableEntry*> map;
   std::string to_string() const;
 };
 
 
 class FillTable {
 public:
+  void createEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
+
   std::vector<toFill*> list;
   std::string to_string() const;
 };

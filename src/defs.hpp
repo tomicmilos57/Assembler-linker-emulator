@@ -36,8 +36,6 @@ void iret();
 void softint();
 void ret();
 
-void call(char *op);
-void jmp(char *op);
 void push(char *r);
 void pop(char *r);
 void notinst(char *r);
@@ -52,13 +50,25 @@ void orinst(char *rs, char *rd);
 void xorinst(char *rs, char *rd);
 void shl(char *rs, char *rd);
 void shr(char *rs, char *rd);
-void ld(char *op, char *r);
-void st(char *r, char *op);
 void csrrd(char *csr, char *r);
 void csrwr(char *r, char *csr);
 
-void beq(char *r1, char *r2, char *op);
-void bne(char *r1, char *r2, char *op);
-void bgt(char *r1, char *r2, char *op);
+void call_literal(int val);
+void call_symbol(char *sym);
+void jmp_literal(int val);
+void jmp_symbol(char *sym);
+void beq_literal(char *r1, char *r2, int val);
+void beq_symbol(char *r1, char *r2, char *sym);
+void bne_literal(char *r1, char *r2, int val);
+void bne_symbol(char *r1, char *r2, char *sym);
+void bgt_literal(char *r1, char *r2, int val);
+void bgt_symbol(char *r1, char *r2, char *sym);
+
+void ld_literal(int val, char *r);
+void ld_symbol(char *sym, char *r);
+void ld_memory(char *mem, char *r);
+void st_literal(char *r, int val);
+void st_symbol(char *r, char *sym);
+void st_memory(char *r, char *mem);
 
 #endif

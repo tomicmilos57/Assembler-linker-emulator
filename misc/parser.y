@@ -10,12 +10,17 @@ extern "C" int yylex(void);
 void halt();
 void softint();
 void iret();
-void call(char *op);
+void call_literal(int val);
+void call_symbol(char *sym);
 void ret();
-void jmp(char *op);
-void beq(char *r1, char *r2, char *op);
-void bne(char *r1, char *r2, char *op);
-void bgt(char *r1, char *r2, char *op);
+void jmp_literal(int val);
+void jmp_symbol(char *sym);
+void beq_literal(char *r1, char *r2, int val);
+void beq_symbol(char *r1, char *r2, char *sym);
+void bne_literal(char *r1, char *r2, int val);
+void bne_symbol(char *r1, char *r2, char *sym);
+void bgt_literal(char *r1, char *r2, int val);
+void bgt_symbol(char *r1, char *r2, char *sym);
 void push(char *r);
 void pop(char *r);
 void xchg(char *rs, char *rd);
@@ -29,8 +34,12 @@ void orinst(char *rs, char *rd);
 void xorinst(char *rs, char *rd);
 void shl(char *rs, char *rd);
 void shr(char *rs, char *rd);
-void ld(char *op, char *r);
-void st(char *r, char *op);
+void ld_literal(int val, char *r);
+void ld_symbol(char *sym, char *r);
+void ld_memory(char *mem, char *r);
+void st_literal(char *r, int val);
+void st_symbol(char *r, char *sym);
+void st_memory(char *r, char *mem);
 void csrrd(char *csr, char *r);
 void csrwr(char *r, char *csr);
 
@@ -63,6 +72,7 @@ typedef struct OperandNode {
 %token <num> NUMBER
 %type <list> operand_list operand_list_tail expr term
 %type <s> operand memory_operand
+%type <num> literal
 
 %token HALT INT IRET CALL RET JMP BEQ BNE BGT PUSH POP XCHG ADD SUB MUL DIV NOT AND OR XOR SHL SHR LD ST CSRRD CSRWR
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END LABEL
@@ -84,12 +94,17 @@ instruction:
       HALT                                { halt(); }
     | INT                                 { softint(); }
     | IRET                                { iret(); }
-    | CALL operand                        { call($2); }
+    | CALL literal                        { call_literal($2); }
+    | CALL SYMBOL                         { call_symbol($2); }
     | RET                                 { ret(); }
-    | JMP operand                         { jmp($2); }
-    | BEQ REGISTER ',' REGISTER ',' operand { beq($2, $4, $6); }
-    | BNE REGISTER ',' REGISTER ',' operand { bne($2, $4, $6); }
-    | BGT REGISTER ',' REGISTER ',' operand { bgt($2, $4, $6); }
+    | JMP literal                         { jmp_literal($2); }
+    | JMP SYMBOL                          { jmp_symbol($2); }
+    | BEQ REGISTER ',' REGISTER ',' literal { beq_literal($2, $4, $6); }
+    | BEQ REGISTER ',' REGISTER ',' SYMBOL  { beq_symbol($2, $4, $6); }
+    | BNE REGISTER ',' REGISTER ',' literal { bne_literal($2, $4, $6); }
+    | BNE REGISTER ',' REGISTER ',' SYMBOL  { bne_symbol($2, $4, $6); }
+    | BGT REGISTER ',' REGISTER ',' literal { bgt_literal($2, $4, $6); }
+    | BGT REGISTER ',' REGISTER ',' SYMBOL  { bgt_symbol($2, $4, $6); }
     | PUSH REGISTER                       { push($2); }
     | POP REGISTER                        { pop($2); }
     | XCHG REGISTER ',' REGISTER          { xchg($2, $4); }
@@ -103,8 +118,12 @@ instruction:
     | XOR REGISTER ',' REGISTER           { xorinst($2, $4); }
     | SHL REGISTER ',' REGISTER           { shl($2, $4); }
     | SHR REGISTER ',' REGISTER           { shr($2, $4); }
-    | LD operand ',' REGISTER             { ld($2, $4); }
-    | ST REGISTER ',' operand             { st($2, $4); }
+    | LD literal ',' REGISTER             { ld_literal($2, $4); }
+    | LD SYMBOL ',' REGISTER              { ld_symbol($2, $4); }
+    | LD memory_operand ',' REGISTER      { ld_memory($2, $4); }
+    | ST REGISTER ',' literal             { st_literal($2, $4); }
+    | ST REGISTER ',' SYMBOL              { st_symbol($2, $4); }
+    | ST REGISTER ',' memory_operand      { st_memory($2, $4); }
     | CSRRD REGISTER ',' REGISTER         { csrrd($2, $4); }
     | CSRWR REGISTER ',' REGISTER         { csrwr($2, $4); }
     ;
@@ -158,6 +177,10 @@ label:
          free($1);
      }
    ;
+
+literal:
+      NUMBER { $$ = $1; }
+    ;
 
 operand:
       NUMBER {

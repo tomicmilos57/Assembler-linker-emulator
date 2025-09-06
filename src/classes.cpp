@@ -1,14 +1,20 @@
 #include "classes.hpp"
 
-void SymbolTable::createEntry(int value, bool local, char* symbol){
+extern Sections sections;
+extern SymbolTable symtable;
+extern FillTable filltable;
+
+void SymbolTable::createEntry(int value, bool found, bool local, char* symbol){
 
   symbolTableEntry* entry = new symbolTableEntry;
 
   entry->value = value;
   entry->local = local;
+  entry->found = found;
   entry->symbol = std::string(symbol);
 
   list.push_back(entry);
+  map[entry->symbol] = entry;
 
 }
 
@@ -140,6 +146,23 @@ std::string Sections::sections_to_string() const{
   return out.str();
 }
 
+void FillTable::createEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
+  toFill* entry = new toFill();
+
+  entry->section = sections.getCurrentSection();
+  entry->offset = sections.getCurrentSection()->offset;
+
+  entry->symbol = std::string(symbol);
+
+  entry->instruction =  instruction;
+  entry->regA = regA;
+  entry->regB = regB;
+  entry->regC = regC;
+  entry->disp = disp;
+
+  this->list.push_back(entry);
+}
+
 std::string FillTable::to_string() const {
   std::ostringstream out;
 
@@ -150,9 +173,6 @@ std::string FillTable::to_string() const {
     const auto &entry = list[i];
 
     uintptr_t offset = 0;
-    if (entry->section && entry->sectionEntry) {
-      offset = static_cast<uintptr_t>(entry->sectionEntry - entry->section->array);
-    }
 
     out << std::setw(3) << std::dec << i << " ";
     out << std::setw(8) << (entry->section ? entry->section->name : "NULL") << " ";

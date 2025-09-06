@@ -8,13 +8,13 @@ extern FillTable filltable;
 void add_global(char *sym) {
   debugf(".global %s\n", sym);
 
-  symtable.createEntry(0, false, sym);
+  symtable.createEntry(0, false, false, sym);
 }
 
 void add_extern(char *sym)    { 
   debugf(".extern %s\n", sym);
 
-  symtable.createEntry(0, true, sym);
+  symtable.createEntry(0, false, true, sym);
 }
 
 void set_section(char *name)  { 
@@ -23,7 +23,7 @@ void set_section(char *name)  {
   Section* sec = new Section(std::string(name));
   sections.add_section(sec);
 
-  symtable.createEntry(0, false, name);
+  symtable.createEntry(0, true, false, name);
 }
 
 void add_word(int n) {
