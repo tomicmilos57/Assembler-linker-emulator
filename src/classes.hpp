@@ -45,20 +45,6 @@ public:
   void insert_relocation(char* symbol, int addend);
 };
 
-typedef struct toFill{
-
-  Section* section;
-  uint32_t offset;
-  std::string symbol;
-
-  uint32_t instruction;
-  uint32_t regA;
-  uint32_t regB;
-  uint32_t regC;
-  uint32_t disp;
-
-} toFill;
-
 class Sections {
 public:
   std::list<Section*> list;
@@ -82,10 +68,25 @@ public:
   std::string to_string() const;
 };
 
+typedef struct toFill{
+
+  Section* section;
+  uint32_t offset;
+  std::string symbol;
+
+  uint32_t instruction;
+  uint32_t regA;
+  uint32_t regB;
+  uint32_t regC;
+  uint32_t disp;
+
+  bool literal;
+} toFill;
 
 class FillTable {
 public:
   void createEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
+  void createLiteralEntry(int val, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
 
   std::vector<toFill*> list;
   std::string to_string() const;

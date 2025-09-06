@@ -150,9 +150,28 @@ void FillTable::createEntry(char* symbol, uint32_t instruction, uint32_t regA, u
   toFill* entry = new toFill();
 
   entry->section = sections.getCurrentSection();
+  entry->literal = false;
   entry->offset = sections.getCurrentSection()->offset;
 
   entry->symbol = std::string(symbol);
+
+  entry->instruction =  instruction;
+  entry->regA = regA;
+  entry->regB = regB;
+  entry->regC = regC;
+  entry->disp = disp;
+
+  this->list.push_back(entry);
+}
+
+void FillTable::createLiteralEntry(int val, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
+  toFill* entry = new toFill();
+
+  sections.getCurrentSection()->list_of_literals.push_back(val);
+
+  entry->section = sections.getCurrentSection();
+  entry->literal = true;
+  entry->offset = sections.getCurrentSection()->list_of_literals.size() - 1;
 
   entry->instruction =  instruction;
   entry->regA = regA;
