@@ -146,12 +146,24 @@ std::string Sections::sections_to_string() const{
   return out.str();
 }
 
-void FillTable::createEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
+void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
   toFill* entry = new toFill();
+  sections.getCurrentSection()->list_of_literals.push_back(0); //creating empty 4 bytes for symbol
 
   entry->section = sections.getCurrentSection();
-  entry->literal = false;
   entry->offset = sections.getCurrentSection()->offset;
+
+  entry->literal = false;
+  entry->literalOffset = sections.getCurrentSection()->list_of_literals.size() - 1;
+
+  std::string str = std::string(symbol);
+  bool found = symtable.map.contains(str);
+
+  if (!found){
+    symtable.createEntry(0, false, true, symbol);
+  }
+  //Do relocations after parsing
+  //sections.getCurrentSection()->insert_relocation(sym, 0);
 
   entry->symbol = std::string(symbol);
 
@@ -170,8 +182,10 @@ void FillTable::createLiteralEntry(int val, uint32_t instruction, uint32_t regA,
   sections.getCurrentSection()->list_of_literals.push_back(val);
 
   entry->section = sections.getCurrentSection();
+  entry->offset = sections.getCurrentSection()->offset;
+
   entry->literal = true;
-  entry->offset = sections.getCurrentSection()->list_of_literals.size() - 1;
+  entry->literalOffset = sections.getCurrentSection()->list_of_literals.size() - 1;
 
   entry->instruction =  instruction;
   entry->regA = regA;

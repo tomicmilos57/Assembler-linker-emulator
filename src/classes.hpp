@@ -72,6 +72,7 @@ typedef struct toFill{
 
   Section* section;
   uint32_t offset;
+  uint32_t literalOffset;
   std::string symbol;
 
   uint32_t instruction;
@@ -85,7 +86,7 @@ typedef struct toFill{
 
 class FillTable {
 public:
-  void createEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
+  void createSymbolEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
   void createLiteralEntry(int val, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
 
   std::vector<toFill*> list;
