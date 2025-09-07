@@ -9,23 +9,7 @@ extern int get_reg(char* chars);
 extern int get_csr(char* chars);
 
 void insert_symbol_jumps(char* sym, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC){
-
-  std::string str = std::string(sym);
-  bool found = symtable.map.contains(str);
-
-  if (found){
-
-    sections.getCurrentSection()->insert_relocation(sym, 0);
-    insert_instruction(instruction, regA, regB, regC, 0);
-
-  } else{
-
-    symtable.createEntry(0, false, true, sym);
-    sections.getCurrentSection()->insert_relocation(sym, 0);
-    insert_instruction(instruction, regA, regB, regC, 0);
-
-  }
-
+  filltable.createSymbolEntry(sym, instruction, regA, regB, regC, 0);
 }
 
 void call_literal(int val) {
