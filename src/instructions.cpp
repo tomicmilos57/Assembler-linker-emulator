@@ -6,10 +6,10 @@ extern FillTable filltable;
 
 void insert_instruction(uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
 
-  uint32_t i_instruction = instruction << 24;
-  uint32_t i_regA = regA << 20;
-  uint32_t i_regB = regB << 16;
-  uint32_t i_regC = regC << 12;
+  uint32_t i_instruction = (instruction & 0xFF) << 24;
+  uint32_t i_regA = (regA & 0xF) << 20;
+  uint32_t i_regB = (regB & 0xF) << 16;
+  uint32_t i_regC = (regC & 0xF) << 12;
   uint32_t i_disp = disp & 0xFFF;
 
 

@@ -10,7 +10,7 @@ build:
 	g++ -std=c++20 -o build/asembler src/*.cpp build/lex.yy.c build/parser.tab.c -lfl
 
 run: build
-	./build/asembler ./misc/test.txt
+	./build/asembler ./misc/test.s
 
 test: build
 	@echo "Running assembler on all test files..."

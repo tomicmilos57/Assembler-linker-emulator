@@ -7,14 +7,19 @@ extern FillTable filltable;
 void patch_instruction(Section* section, uint32_t offset,
     uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
 
-  uint32_t i_instruction = instruction << 24;
-  uint32_t i_regA = regA << 20;
-  uint32_t i_regB = regB << 16;
-  uint32_t i_regC = regC << 12;
+  uint32_t i_instruction = (instruction & 0xFF) << 24;
+  uint32_t i_regA = (regA & 0xF) << 20;
+  uint32_t i_regB = (regB & 0xF) << 16;
+  uint32_t i_regC = (regC & 0xF) << 12;
   uint32_t i_disp = disp & 0xFFF;
 
 
   debugf("patching: 0x%x\n", i_instruction | i_regA | i_regB | i_regC | i_disp);
+  debugf("instruction: 0x%x\n", i_instruction);
+  debugf("regA: 0x%x\n", i_regA);
+  debugf("regB: 0x%x\n", i_regB);
+  debugf("regC: 0x%x\n", i_regC);
+  debugf("disp: 0x%x\n", i_disp);
   *(uint32_t*)&(section->array)[offset] = i_instruction | i_regA | i_regB | i_regC | i_disp;
 }
 
