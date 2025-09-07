@@ -30,7 +30,6 @@ public:
   Section(std::string name) : name(name) {}
 
   uint8_t array[4*1024];
-  uint32_t size = 0;
   std::vector<uint32_t> list_of_literals;
   uint32_t offset = 0;
   std::string name;
@@ -43,6 +42,7 @@ public:
   void insert_int(uint32_t n);
   void insert_byte(uint8_t b);
   void insert_relocation(char* symbol, int addend);
+  void insert_relocation(char* symbol, int addend, uint32_t custom_offset);
 };
 
 class Sections {
@@ -56,8 +56,8 @@ public:
     return list.back();
   }
   std::string sections_to_string() const;
+  void finnishAssembly();
 };
-
 
 class SymbolTable {
 public:
@@ -73,6 +73,7 @@ typedef struct toFill{
   Section* section;
   uint32_t offset;
   uint32_t literalOffset;
+  char* symchar;
   std::string symbol;
 
   uint32_t instruction;
@@ -88,6 +89,7 @@ class FillTable {
 public:
   void createSymbolEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
   void createLiteralEntry(int val, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp);
+  void finnishAssembly();
 
   std::vector<toFill*> list;
   std::string to_string() const;

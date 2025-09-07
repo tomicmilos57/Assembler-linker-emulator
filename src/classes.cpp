@@ -4,6 +4,48 @@ extern Sections sections;
 extern SymbolTable symtable;
 extern FillTable filltable;
 
+void patch_instruction(Section* section, uint32_t offset,
+    uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
+
+  uint32_t i_instruction = instruction << 24;
+  uint32_t i_regA = regA << 20;
+  uint32_t i_regB = regB << 16;
+  uint32_t i_regC = regC << 12;
+  uint32_t i_disp = disp & 0xFFF;
+
+
+  debugf("patching: 0x%x\n", i_instruction | i_regA | i_regB | i_regC | i_disp);
+  *(uint32_t*)&(section->array)[offset] = i_instruction | i_regA | i_regB | i_regC | i_disp;
+}
+
+void Sections::finnishAssembly(){
+  for(Section* section : list){
+    uint32_t pos = section->offset;
+
+    for (uint32_t literal : section->list_of_literals) {
+      section->array[pos++] = (literal >> 0) & 0xFF;
+      section->array[pos++] = (literal >> 8) & 0xFF;
+      section->array[pos++] = (literal >> 16) & 0xFF;
+      section->array[pos++] = (literal >> 24) & 0xFF;
+    }
+  }
+
+}
+
+void FillTable::finnishAssembly(){
+  for(toFill* entry : list){
+
+    patch_instruction(entry->section, entry->offset,
+        entry->instruction, entry->regA, entry->regB, entry->regC,
+        entry->section->offset + entry->literalOffset*4);
+
+    if (!entry->literal) {
+      entry->section->insert_relocation(entry->symchar, 0,
+          entry->section->offset + entry->literalOffset*4);
+    }
+  }
+}
+
 void SymbolTable::createEntry(int value, bool found, bool local, char* symbol){
 
   symbolTableEntry* entry = new symbolTableEntry;
@@ -58,6 +100,18 @@ void Section::insert_relocation(char* symbol, int addend){
   relocationEntry* entry = new relocationEntry;
 
   entry->offset = this->offset;
+  entry->symbol = std::string(symbol);
+  entry->addend = addend;
+
+  list_of_relocations.push_back(entry);
+
+}
+
+void Section::insert_relocation(char* symbol, int addend, uint32_t custom_offset){
+
+  relocationEntry* entry = new relocationEntry;
+
+  entry->offset = custom_offset;
   entry->symbol = std::string(symbol);
   entry->addend = addend;
 
@@ -167,6 +221,7 @@ void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t r
   //sections.getCurrentSection()->insert_relocation(sym, 0);
 
   entry->symbol = std::string(symbol);
+  entry->symchar = symbol;
 
   entry->instruction =  instruction;
   entry->regA = regA;
@@ -188,6 +243,7 @@ void FillTable::createLiteralEntry(int val, uint32_t instruction, uint32_t regA,
 
   entry->literal = true;
   entry->literalOffset = sections.getCurrentSection()->list_of_literals.size() - 1;
+  entry->symbol = std::to_string(val);
 
   entry->instruction =  instruction;
   entry->regA = regA;

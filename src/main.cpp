@@ -37,8 +37,11 @@ int main(int argc, char *argv[]) {
 
 
   yyparse();
-  print_everything();
   printf("Finnished parsing\n");
+
+  sections.finnishAssembly();
+  filltable.finnishAssembly();
+  print_everything();
 
   return 0;
 }
