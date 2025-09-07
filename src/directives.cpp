@@ -67,4 +67,13 @@ void equ(char *name, OperandNode *expr_list) {
   }
   debugf("\n");
 }
+
+void label(char* name){
+  debugf("label %s:", name);
+  if (!symtable.map.contains(name)) 
+    symtable.createEntry(sections.getCurrentSection()->offset, true, true, name);
+  else 
+    symtable.map[name]->value = sections.getCurrentSection()->offset;
+}
+
 void finish() { debugf(".end\n"); }

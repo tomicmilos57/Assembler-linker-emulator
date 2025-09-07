@@ -1,4 +1,4 @@
-#include "classes.hpp"
+#include "defs.hpp"
 
 extern Sections sections;
 extern SymbolTable symtable;
@@ -148,6 +148,7 @@ std::string Sections::sections_to_string() const{
 
 void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
   toFill* entry = new toFill();
+  debugf("ToFillSymbol inst: 0x%x\n", instruction | regA | regB | regC | disp);
   sections.getCurrentSection()->list_of_literals.push_back(0); //creating empty 4 bytes for symbol
 
   entry->section = sections.getCurrentSection();
@@ -178,6 +179,7 @@ void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t r
 
 void FillTable::createLiteralEntry(int val, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
   toFill* entry = new toFill();
+  debugf("ToFillLiteral inst: 0x%x\n", instruction | regA | regB | regC | disp);
 
   sections.getCurrentSection()->list_of_literals.push_back(val);
 
@@ -205,11 +207,9 @@ std::string FillTable::to_string() const {
   for (size_t i = 0; i < list.size(); i++) {
     const auto &entry = list[i];
 
-    uintptr_t offset = 0;
-
     out << std::setw(3) << std::dec << i << " ";
     out << std::setw(8) << (entry->section ? entry->section->name : "NULL") << " ";
-    out << "0x" << std::setw(6) << std::setfill('0') << std::hex << offset << " ";
+    out << "0x" << std::setw(6) << std::setfill('0') << std::hex << entry->offset << " ";
     out << entry->symbol << "\n";
   }
 

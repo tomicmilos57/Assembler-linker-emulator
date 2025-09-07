@@ -68,6 +68,7 @@ void skip_bytes(int n);
 void add_ascii(char *s);
 void define_equ(char *sym, char *value);
 void equ(char *name, struct OperandNode *expr_list);
+void label(char *name);
 void finish();
 
 typedef struct OperandNode {
@@ -202,7 +203,7 @@ word_list_rest:
 
 label:
      SYMBOL ':' {
-         free($1);
+         label($1);
      }
    ;
 
