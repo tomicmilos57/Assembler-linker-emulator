@@ -42,7 +42,7 @@ void FillTable::finnishAssembly(){
 
     patch_instruction(entry->section, entry->offset,
         entry->instruction, entry->regA, entry->regB, entry->regC,
-        entry->section->offset + entry->literalOffset*4);
+        entry->section->offset - entry->offset + entry->literalOffset*4);
 
     if (!entry->literal) {
       entry->section->insert_relocation(entry->symchar, 0,
