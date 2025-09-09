@@ -26,6 +26,7 @@ void ld_abs_literal(int val, char *r) {
   debugf("ld_abs_literal: ld $%d,%s\n", val, r);
 
   int reg = get_reg(r);
+  printf("REG: %d\n", reg);
   //gpr[reg]<=mem32[D];
   filltable.createLiteralEntry(val, LOAD_MEM_BC_D, reg, 0, 0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
   insert_instruction(0, 0, 0, 0, 0);

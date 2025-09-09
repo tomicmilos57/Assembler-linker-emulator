@@ -1,4 +1,5 @@
 #include "defs.hpp"
+#include <cstring>
 
 extern Sections sections;
 extern SymbolTable symtable;
@@ -18,15 +19,21 @@ void insert_instruction(uint32_t instruction, uint32_t regA, uint32_t regB, uint
 }
 
 int get_reg(char* chars){
-    if (chars == NULL || (chars[0] != 'r' && chars[0] != 'R')) {
-        return -1;
-    }
-    int reg = atoi(chars + 1);
-    if (reg < 0 || reg > 15) {
-        return -1;
-    }
+  if (!strcmp(chars, "sp")) {
+    return 14;
+  }
+  if (!strcmp(chars, "pc")) {
+    return 15;
+  }
+  if (chars == NULL || (chars[0] != 'r' && chars[0] != 'R')) {
+    return -1;
+  }
+  int reg = atoi(chars + 1);
+  if (reg < 0 || reg > 15) {
+    return -1;
+  }
 
-    return reg;
+  return reg;
 }
 
 int get_csr(char* chars){
