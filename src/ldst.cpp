@@ -8,27 +8,13 @@ extern void insert_instruction(uint32_t instruction, uint32_t regA, uint32_t reg
 extern int get_reg(char* chars);
 extern int get_csr(char* chars);
 
-//void insert_symbol_ldst(char* sym, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC){
-//
-//  std::string str = std::string(sym);
-//  bool found = symtable.map.contains(str);
-//
-//  if (!found){
-//    symtable.createEntry(0, false, true, sym);
-//  }
-//
-//  //sections.getCurrentSection()->insert_relocation(sym, 0);
-//  //insert_instruction(instruction, regA, regB, regC, 0);
-//  filltable.createSymbolEntry(sym, instruction, regA, regB, regC, disp);
-//}
-
 void ld_abs_literal(int val, char *r) {
   debugf("ld_abs_literal: ld $%d,%s\n", val, r);
 
   int reg = get_reg(r);
   printf("REG: %d\n", reg);
   //gpr[reg]<=mem32[D];
-  filltable.createLiteralEntry(val, LOAD_MEM_BC_D, reg, 0, 0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
+  filltable.createLiteralEntry(val, LOAD_MEM_BC_D, reg, PC, 0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
   insert_instruction(0, 0, 0, 0, 0);
 }
 
@@ -36,7 +22,7 @@ void ld_abs_symbol(char *sym, char *r) {
   debugf("ld_abs_symbol: ld $%s,%s\n", sym, r);
 
   int reg = get_reg(r);
-  filltable.createSymbolEntry(sym, LOAD_MEM_BC_D, reg, 0, 0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
+  filltable.createSymbolEntry(sym, LOAD_MEM_BC_D, reg, PC, 0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
   insert_instruction(LOAD_MEM_BC_D, reg, 0, 0, 0);
 }
 
@@ -92,6 +78,7 @@ void ld_mem_reg_off_symbol(char *reg, char *sym, char *r) {
   int regrs = get_reg(reg);
   int regrd = get_reg(r);
   filltable.createSymbolEntry(sym, LOAD_MEM_BC_D, regrd, regrs, 0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
+  insert_instruction(0, 0, 0, 0, 0);
 }
 
 void st_abs_literal(char *r, int val) {
@@ -112,14 +99,16 @@ void st_dir_literal(char *r, int val) {
   debugf("st_dir_literal: st %s,%d\n", r, val);
 
   int reg = get_reg(r);
-  filltable.createLiteralEntry(val, STORE_MEM_AB_C_D, 0, 0, reg, 0); //mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C];
+  filltable.createLiteralEntry(val, STORE_MEM_AB_C_D, 0, PC, reg, 0); //mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C];
+  insert_instruction(0, 0, 0, 0, 0);
 }
 
 void st_dir_symbol(char *r, char *sym) {
   debugf("st_dir_symbol: st %s,%s\n", r, sym);
 
   int reg = get_reg(r);
-  filltable.createSymbolEntry(sym, STORE_MEM_AB_C_D, 0, 0, reg, 0); //mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C];
+  filltable.createSymbolEntry(sym, STORE_MEM_AB_C_D, 0, PC, reg, 0); //mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C];
+  insert_instruction(0, 0, 0, 0, 0);
 }
 
 void st_reg(char *r, char *reg) {
@@ -152,4 +141,5 @@ void st_mem_reg_off_symbol(char *r, char *reg, char *sym) {
   int regrd = get_reg(reg);
   int regrs = get_reg(r);
   filltable.createSymbolEntry(sym, STORE_AB_C_D, regrd, 0, regrs, 0); //mem32[gpr[A]+gpr[B]+D]<=gpr[C];
+  insert_instruction(0, 0, 0, 0, 0);
 }

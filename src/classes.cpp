@@ -177,7 +177,6 @@ std::string Section::literals_to_string() const {
   return out.str();
 }
 
-
 std::string Section::relocations_to_string() const {
   std::ostringstream out;
 
@@ -207,7 +206,7 @@ std::string Sections::sections_to_string() const{
 
 void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
   toFill* entry = new toFill();
-  debugf("ToFillSymbol inst: 0x%x\n", instruction | regA | regB | regC | disp);
+  //debugf("ToFillSymbol inst: 0x%x\n", instruction | regA | regB | regC | disp);
   sections.getCurrentSection()->list_of_literals.push_back(0); //creating empty 4 bytes for symbol
 
   entry->section = sections.getCurrentSection();
@@ -228,7 +227,7 @@ void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t r
   entry->symbol = std::string(symbol);
   entry->symchar = symbol;
 
-  entry->instruction =  instruction;
+  entry->instruction = instruction;
   entry->regA = regA;
   entry->regB = regB;
   entry->regC = regC;
@@ -239,7 +238,7 @@ void FillTable::createSymbolEntry(char* symbol, uint32_t instruction, uint32_t r
 
 void FillTable::createLiteralEntry(int val, uint32_t instruction, uint32_t regA, uint32_t regB, uint32_t regC, uint32_t disp){
   toFill* entry = new toFill();
-  debugf("ToFillLiteral inst: 0x%x\n", instruction | regA | regB | regC | disp);
+  //debugf("ToFillLiteral inst: 0x%x\n", instruction | regA | regB | regC | disp);
 
   sections.getCurrentSection()->list_of_literals.push_back(val);
 
@@ -250,7 +249,7 @@ void FillTable::createLiteralEntry(int val, uint32_t instruction, uint32_t regA,
   entry->literalOffset = sections.getCurrentSection()->list_of_literals.size() - 1;
   entry->symbol = std::to_string(val);
 
-  entry->instruction =  instruction;
+  entry->instruction = instruction;
   entry->regA = regA;
   entry->regB = regB;
   entry->regC = regC;
