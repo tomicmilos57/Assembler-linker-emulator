@@ -33,6 +33,7 @@ void Sections::finnishAssembly(){
       section->array[pos++] = (literal >> 16) & 0xFF;
       section->array[pos++] = (literal >> 24) & 0xFF;
     }
+    section->final_size = pos;
   }
 
 }
@@ -129,11 +130,11 @@ std::string Section::section_to_string() const {
 
   out << "#." << name << "\n";
 
-  for (uint32_t i = 0; i < offset; i++) {
+  for (uint32_t i = 0; i < final_size; i++) {
     out << std::hex << std::setfill('0') << std::setw(2)
       << static_cast<int>(array[i]);
 
-    if ((i % 16) != 15 && i + 1 < offset)
+    if ((i % 16) != 15 && i + 1 < final_size)
       out << " ";
 
     if ((i % 16) == 15)

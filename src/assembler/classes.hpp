@@ -32,6 +32,7 @@ public:
   uint8_t array[4*1024];
   std::vector<uint32_t> list_of_literals;
   uint32_t offset = 0;
+  uint32_t final_size = 0;
   std::string name;
   std::vector<relocationEntry*> list_of_relocations;
 
