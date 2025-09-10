@@ -13,6 +13,7 @@ typedef struct symbolTableEntry{
   bool local;
   bool found;
   std::string symbol;
+  std::string section_name = "";
 
 } symbolTableEntry;
 

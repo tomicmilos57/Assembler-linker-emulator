@@ -24,6 +24,7 @@ void set_section(char *name)  {
   sections.add_section(sec);
 
   symtable.createEntry(0, true, false, name);
+  symtable.map[name]->section_name = sections.getCurrentSection()->name;
 }
 
 void add_word(int n) {
@@ -74,6 +75,7 @@ void label(char* name){
     symtable.createEntry(sections.getCurrentSection()->offset, true, true, name);
   else
     symtable.map[name]->value = sections.getCurrentSection()->offset;
+  symtable.map[name]->section_name = sections.getCurrentSection()->name;
 }
 
 void finish() { debugf(".end\n"); }

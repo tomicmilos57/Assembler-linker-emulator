@@ -70,7 +70,6 @@ std::string SymbolTable::to_string() const {
   std::ostringstream out;
 
   out << "#.symtab\n";
-  out << "Num Value    Size Type  Bind Ndx Name\n";
 
   for (size_t i = 0; i < list.size(); ++i) {
     const auto &entry = list[i];
@@ -81,11 +80,12 @@ std::string SymbolTable::to_string() const {
       << std::dec << 0
       << " ";
 
-    out << "NOTYP ";
 
     out << (entry->local ? "LOC " : "GLOB ");
 
-    out << entry->symbol << "\n";
+    out << entry->symbol << " ";
+
+    out << entry->section_name << "\n";
   }
 
   return out.str();
@@ -182,7 +182,6 @@ std::string Section::relocations_to_string() const {
   std::ostringstream out;
 
   out << "#.rela." << name << "\n";
-  out << "Offset  Symbol  Addend\n";
 
   for (const auto &rel : list_of_relocations) {
     out << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << rel->offset << " ";
@@ -198,7 +197,7 @@ std::string Sections::sections_to_string() const{
 
   for (const auto &sec : list) {
     out << sec->section_to_string();
-    out << sec->literals_to_string();
+    //out << sec->literals_to_string();
     out << sec->relocations_to_string();
   }
 

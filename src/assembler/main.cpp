@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include "defs.hpp"
 
 extern void yyparse();
@@ -12,15 +13,9 @@ Sections sections;
 SymbolTable symtable;
 FillTable filltable;
 
-void print_everything(){
-  std::string string_symtable = symtable.to_string();
-  std::string string_sections = sections.sections_to_string();
-  std::string string_filltable = filltable.to_string();
-
-  std::cout << "Symtable:\n"   << symtable.to_string()
-    << "\nSections:\n" << sections.sections_to_string()
-    << "\nFillTable:\n" << filltable.to_string()
-    << std::endl;
+void print_everything(std::ostream& out){
+  out << symtable.to_string();
+  out << sections.sections_to_string() << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -37,11 +32,23 @@ int main(int argc, char *argv[]) {
 
 
   yyparse();
-  printf("Finnished parsing\n");
+  debugf("Finnished parsing\n");
 
   sections.finnishAssembly();
   filltable.finnishAssembly();
-  print_everything();
+  print_everything(std::cout);
+
+  std::ofstream assembly;
+
+  std::string inputFile = argv[1];
+
+  if (inputFile.size() > 2 && inputFile.substr(inputFile.size() - 2) == ".s") {
+    inputFile = inputFile.substr(0, inputFile.size() - 2);
+  }
+
+  assembly.open(std::string(inputFile + ".o"));
+  print_everything(assembly);
+  assembly.close();
 
   return 0;
 }
