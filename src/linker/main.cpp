@@ -6,79 +6,53 @@
 #include <unordered_map>
 #include <iomanip>
 
-typedef struct symbolTableEntry {
-    int value;
-    bool local;
-    bool found;
-    std::string symbol;
-    std::string section_name = "";
-} symbolTableEntry;
+// ========== Symbol Table ==========
 
-class SymbolTable {
-public:
-    void createEntry(int value, bool found, bool local, const std::string &symbol, const std::string &section) {
-        auto *entry = new symbolTableEntry{value, local, found, symbol, section};
-        list.push_back(entry);
-        map[symbol] = entry;
-    }
-
-    std::string to_string() const;
-
-    static SymbolTable from_string(const std::string &input);
-
-    std::vector<symbolTableEntry*> list;
-    std::unordered_map<std::string, symbolTableEntry*> map;
+struct symbolTableEntry {
+  int value;
+  bool local;
+  bool found;
+  std::string symbol;
+  std::string section_name = "";
 };
 
-std::string SymbolTable::to_string() const {
-    std::ostringstream out;
+class SymbolTable {
+  public:
+    void createEntry(int value, bool found, bool local, const std::string &symbol, const std::string &section) {
+      auto *entry = new symbolTableEntry{value, local, found, symbol, section};
+      list.push_back(entry);
+      map[symbol] = entry;
+    }
 
-    out << "#.symtab\n";
+    std::string to_string() const {
+      std::ostringstream out;
+      out << "#.symtab\n";
 
-    for (size_t i = 0; i < list.size(); ++i) {
+      for (size_t i = 0; i < list.size(); ++i) {
         const auto &entry = list[i];
 
         out << std::dec << i << ": "
-            << std::setw(8) << std::setfill('0')
-            << std::hex << std::uppercase << entry->value
-            << " "
-            << std::dec << 0 << " "
-            << (entry->local ? "LOC " : "GLOB ")
-            << entry->symbol;
+          << std::setw(8) << std::setfill('0')
+          << std::hex << std::uppercase << entry->value
+          << " "
+          << std::dec << 0 << " "
+          << (entry->local ? "LOC " : "GLOB ")
+          << entry->symbol;
 
         if (!entry->section_name.empty())
-            out << " " << entry->section_name;
+          out << " " << entry->section_name;
 
         out << "\n";
+      }
+
+      return out.str();
     }
 
-    return out.str();
-}
+    static SymbolTable from_string(const std::vector<std::string> &lines) {
+      SymbolTable table;
+      for (auto &line : lines) {
+        if (line.empty() || line[0] == '#') continue;
 
-SymbolTable SymbolTable::from_string(const std::string &input) {
-    SymbolTable table;
-    std::istringstream iss(input);
-    std::string line;
-
-    bool in_symtab = false;
-
-    while (std::getline(iss, line)) {
-        if (line.empty()) continue;
-
-        // section marker?
-        if (line.rfind("#.", 0) == 0) {
-            if (line == "#.symtab") {
-                in_symtab = true;
-                continue;
-            } else if (in_symtab) {
-                // we reached the next section -> stop
-                break;
-            }
-        }
-
-        if (!in_symtab) continue; // skip until we reach #.symtab
-
-        // parse symbol table entry line
         std::istringstream ls(line);
 
         std::string index_colon;
@@ -88,51 +62,119 @@ SymbolTable SymbolTable::from_string(const std::string &input) {
         std::string symbol;
         std::string section;
 
-        ls >> index_colon;    // "0:"
+        ls >> index_colon;
         if (index_colon.back() == ':')
-            index_colon.pop_back();
+          index_colon.pop_back();
 
         if (!(ls >> value_hex >> dummy >> bind >> symbol))
-            continue;
+          continue;
         ls >> section; // optional
 
         int value = 0;
         try {
-            value = std::stoi(value_hex, nullptr, 16);
+          value = std::stoi(value_hex, nullptr, 16);
         } catch (...) {
-            std::cerr << "Invalid value '" << value_hex << "' in line: " << line << "\n";
-            continue;
+          continue;
         }
 
         bool local = (bind == "LOC");
         bool found = true;
 
         table.createEntry(value, found, local, symbol, section);
+      }
+      return table;
     }
 
-    return table;
-}
+    std::vector<symbolTableEntry*> list;
+    std::unordered_map<std::string, symbolTableEntry*> map;
+};
+
+// ========== Section / ObjectFile ==========
+
+struct Section {
+  std::string name;
+  std::vector<std::string> lines;   // raw text lines
+};
+
+struct ObjectFile {
+  SymbolTable symtab;
+  std::vector<Section> sections;
+
+  static ObjectFile parse(const std::string &input) {
+    ObjectFile obj;
+    std::istringstream iss(input);
+    std::string line;
+
+    Section current;
+    bool in_symtab = false;
+    std::vector<std::string> symtab_lines;
+
+    while (std::getline(iss, line)) {
+      if (line.empty()) continue;
+
+      if (line.rfind("#.", 0) == 0) {
+        // starting new section
+        if (!current.name.empty()) {
+          obj.sections.push_back(current);
+          current = Section{};
+        }
+
+        if (line == "#.symtab") {
+          in_symtab = true;
+          continue;
+        } else {
+          in_symtab = false;
+          current.name = line.substr(2); // strip "#."
+          continue;
+        }
+      }
+
+      if (in_symtab) {
+        symtab_lines.push_back(line);
+      } else if (!current.name.empty()) {
+        current.lines.push_back(line);
+      }
+    }
+
+    if (!current.name.empty())
+      obj.sections.push_back(current);
+
+    obj.symtab = SymbolTable::from_string(symtab_lines);
+    return obj;
+  }
+
+  void dump() const {
+    std::cout << symtab.to_string() << "\n";
+    for (auto &sec : sections) {
+      std::cout << "#." << sec.name << "\n";
+      for (auto &l : sec.lines)
+        std::cout << l << "\n";
+    }
+  }
+};
+
+// ========== MAIN ==========
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <symtab_file>\n";
-        return 1;
-    }
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <obj_file>\n";
+    return 1;
+  }
 
-    std::ifstream infile(argv[1]);
-    if (!infile) {
-        std::cerr << "Error: cannot open file " << argv[1] << "\n";
-        return 1;
-    }
+  std::ifstream infile(argv[1]);
+  if (!infile) {
+    std::cerr << "Error: cannot open file " << argv[1] << "\n";
+    return 1;
+  }
 
-    std::ostringstream buffer;
-    buffer << infile.rdbuf();
-    std::string content = buffer.str();
+  std::ostringstream buffer;
+  buffer << infile.rdbuf();
+  std::string content = buffer.str();
 
-    SymbolTable table = SymbolTable::from_string(content);
+  ObjectFile obj = ObjectFile::parse(content);
 
-    // For testing: print the table back
-    std::cout << table.to_string();
+  // print everything back
+  obj.dump();
 
-    return 0;
+  return 0;
 }

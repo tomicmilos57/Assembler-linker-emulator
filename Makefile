@@ -23,5 +23,11 @@ test: build
 		fi; \
 	done
 
+linker:
+	mkdir -p build
+	g++ -o build/linker ./src/linker/*.cpp
+	./build/linker /home/milos/Projects/SS/resenje/misc/test.o
+
 clean:
 	rm -rf build
+	rm ./misc/*.o
