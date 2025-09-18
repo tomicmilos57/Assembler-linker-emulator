@@ -23,11 +23,19 @@ test: build
 		fi; \
 	done
 
-linker:
+linker: run
 	mkdir -p build
 	g++ -o build/linker ./src/linker/*.cpp
-	./build/linker /home/milos/Projects/SS/resenje/misc/test.o
+	./build/linker /home/milos/Projects/SS/resenje/misc/test.o /home/milos/Projects/SS/resenje/misc/test.o
+
+testlinker: test
+	mkdir -p build
+	g++ -o build/linker ./src/linker/*.cpp
+	./build/linker ./tests/nivo-a/*.o
 
 clean:
 	rm -rf build
-	rm ./misc/*.o
+	rm -rf ./misc/*.o
+	rm -rf ./tests/nivo-a/*.o
+	rm -rf ./tests/nivo-b/*.o
+	rm -rf ./tests/nivo-c/*.o
