@@ -21,6 +21,9 @@ public:
   void info_ir();
   void info_instruction_number();
   void printMemory();
+  void set_inter(char c);
+  void handle_interrupt();
+  bool keyboard = 0;
 
 private:
 enum instruction {

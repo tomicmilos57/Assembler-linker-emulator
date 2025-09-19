@@ -38,7 +38,7 @@ CPU::~CPU(){
 
 bool CPU::execute(){
   this->ir = fetch_word(this->pc);
-  std::cout << std::hex << "PC: " << pc << ", IR: " << ir << std::endl;
+  //std::cout << std::hex << "PC: " << pc << ", IR: " << ir << std::endl;
   pc += 4;
   instruction_number++;
 
@@ -53,17 +53,28 @@ bool CPU::execute(){
   execute_instruction(inst);
   regfile[0] = 0;
   
-  std::cout << "My ABCD " << fetch_word(0xAC) << std::endl;
-  std::cout << "Address 0 " << fetch_word(0x00) << std::endl;
-  info_registers();
-  getchar();
+  //std::cout << "My ABCD " << fetch_word(0xAC) << std::endl;
+  //std::cout << "Address 0 " << fetch_word(0x00) << std::endl;
+  //info_registers();
+  //getchar();
   
   if (inst == i_halt) {
     return false;
   }
+
+  handle_interrupt();
   return true;
 }
 
+void CPU::handle_interrupt(){
+  if (keyboard == 1) {
+    push(status);
+    push(pc);
+    status = status & ~0x1;
+    pc = handler;
+    keyboard = 0;
+  }
+}
 void CPU::info_registers(){
 
   for (int i = 0; i < 16; ++i) {
@@ -114,6 +125,10 @@ void CPU::store_word(uint32_t address, uint32_t value) {
     memory[address + 1] = static_cast<uint8_t>((value >> 8) & 0xFF);
     memory[address + 2] = static_cast<uint8_t>((value >> 16) & 0xFF);
     memory[address + 3] = static_cast<uint8_t>((value >> 24) & 0xFF);
+
+    if(address == 0xFFFFFF00){
+      std::cout << (char)value << std::flush;
+    }
 }
 
 CPU::instruction CPU::decode_instruction() {
@@ -402,3 +417,8 @@ void CPU::execute_instruction(instruction inst){
   }
 }
 
+void CPU::set_inter(char c){
+  cause = cause | 3;
+  keyboard = 1;
+  store_word(0xFFFFFF04, (uint32_t)c);
+}
