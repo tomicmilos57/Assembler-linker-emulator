@@ -238,23 +238,98 @@ class Sections {
       }
     }
 
+    void place_section(std::string section_name, int place){
+      if(symtab.map.contains(section_name)){
+        std::cout << "Value: " << place << std::endl;
+        symtab.map[section_name]->value = place;
+      }
+      else
+        std::cout << "Section: " << section_name << " doesnt exist" << std::endl;
+    }
+
+    void place_all_sections(){
+      uint32_t next = 0;
+
+      for(auto& entry : symtab.list){
+
+        if (entry->symbol == entry->section_name && entry->value == 0) { //this means it is a section not label
+          std::cout << "Section: " << entry->symbol << " Next: " << next << std::endl;
+          entry->value = next;
+          next = entry->value + map[entry->symbol]->offset;
+        }
+      }
+
+    }
+
     void link(){
 
     }
 };
 
+
+#include <getopt.h>
+
+struct PlaceOption {
+  std::string section;
+  uint32_t address;
+};
+
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " <obj_file>...\n";
-    return 1;
-  }
+  bool hex = false;
+  bool relocatable = false;
+  std::string output_file;
+  std::vector<PlaceOption> places;
 
   Sections all;
 
-  for (int i = 1; i < argc; i++) {
+  const struct option long_options[] = {
+    {"place", required_argument, nullptr, 'p'},
+    {"hex",   no_argument,       nullptr, 'h'},
+    {"relocatable", no_argument, nullptr, 'r'},
+    {"output", required_argument, nullptr, 'o'},
+    {0, 0, 0, 0}
+  };
+
+  int opt;
+  while ((opt = getopt_long(argc, argv, "o:p:hr", long_options, nullptr)) != -1) {
+    switch (opt) {
+      case 'p': {
+        std::string value(optarg);
+        size_t at = value.find('@');
+        if (at != std::string::npos) {
+          PlaceOption p;
+          p.section = value.substr(0, at);
+          std::string addr_str = value.substr(at + 1);
+          try {
+            p.address = static_cast<uint32_t>(std::stoul(addr_str, nullptr, 0));
+          } catch (const std::exception &e) {
+            std::cerr << "Invalid address: " << addr_str << "\n";
+            return 1;
+          }
+          places.push_back(p);
+        }
+        break;
+      }
+      case 'h':
+        hex = true;
+        break;
+      case 'r':
+        relocatable = true;
+        break;
+      case 'o':
+        output_file = optarg;
+        break;
+      default:
+        std::cerr << "usage: " << argv[0]
+                  << " [--hex] [--relocatable] [--place=sec@addr] [-o outfile] <obj_file>...\n";
+        return 1;
+    }
+  }
+
+  for (int i = optind; i < argc; i++) {
     std::ifstream infile(argv[i]);
     if (!infile) {
-      std::cerr << "Error: cannot open file " << argv[i] << "\n";
+      std::cerr << "error: cannot open file " << argv[i] << "\n";
       return 1;
     }
 
@@ -265,6 +340,12 @@ int main(int argc, char *argv[]) {
     Sections obj = Sections::parse(content);
     all.merge(obj);
   }
+
+  for (auto &p : places) {
+    all.place_section(p.section, p.address);
+  }
+
+  all.place_all_sections();
 
   all.dump();
 

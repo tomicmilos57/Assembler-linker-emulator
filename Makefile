@@ -25,13 +25,13 @@ test: build
 
 linker: run
 	mkdir -p build
-	g++ -o build/linker ./src/linker/*.cpp
-	./build/linker /home/milos/Projects/SS/resenje/misc/test.o /home/milos/Projects/SS/resenje/misc/test.o
+	g++ -std=c++20 -o build/linker ./src/linker/*.cpp
+	./build/linker --hex --place=data@0x4000F000 --place=text@0x40000000 /home/milos/Projects/SS/resenje/misc/test.o /home/milos/Projects/SS/resenje/misc/test.o
 
 testlinker: test
 	mkdir -p build
 	g++ -std=c++20 -o build/linker ./src/linker/*.cpp
-	./build/linker ./tests/nivo-a/*.o
+	./build/linker --hex --place=my_code@0x40000000 --place=math@0xF0000000 ./tests/nivo-a/*.o
 
 clean:
 	rm -rf build
