@@ -191,11 +191,12 @@ class Sections {
 
       for (auto *sec : other.sections) {
         Section *dst = findOrCreateSection(sec->name);
+        uint32_t section_offset = dst->offset;
         for (uint32_t i = 0; i < sec->offset; i++) {
           dst->addByte(sec->array[i]);
         }
         for (auto *r : sec->list_of_relocations) {
-          relocation *nr = new relocation{r->offset, r->symbol, r->addend, r->section_name};
+          relocation *nr = new relocation{r->offset + section_offset, r->symbol, r->addend, r->section_name};
           dst->list_of_relocations.push_back(nr);
         }
       }
