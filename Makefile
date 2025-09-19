@@ -33,6 +33,11 @@ testlinker: test
 	g++ -std=c++20 -o build/linker ./src/linker/*.cpp
 	./build/linker --hex --relocatable --place=my_code@0x40000000 --place=math@0xF0000000 ./tests/nivo-a/*.o
 
+emu:
+	mkdir -p build
+	g++ -std=c++20 -o build/emulator ./src/emulator/*.cpp
+	./build/emulator
+
 clean:
 	rm -rf build
 	rm -rf ./misc/*.o
