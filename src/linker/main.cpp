@@ -268,6 +268,43 @@ class Sections {
         }
       }
     }
+
+    std::string binary() const {
+      std::ostringstream out;
+
+      for (auto* sec : sections) {
+        if (sec->offset == 0) continue;
+
+        //out << "#." << sec->name << "\n";
+
+        uint32_t address = 0;
+        if (symtab.map.count(sec->name)) {
+          address = symtab.map.at(sec->name)->value;
+        }
+
+        for (uint32_t i = 0; i < sec->offset; i++) {
+          if (i % 8 == 0) {
+            out << std::setw(8) << std::setfill('0') << std::hex << std::uppercase
+              << (address + i) << ": ";
+          }
+
+          out << std::setw(2) << std::setfill('0') << std::hex << std::uppercase
+            << static_cast<int>(sec->array[i]) << " ";
+
+          if ((i + 1) % 8 == 0) {
+            out << "\n";
+          }
+        }
+
+        if (sec->offset % 8 != 0) {
+          out << "\n";
+        }
+
+        out << "\n";
+      }
+
+      return out.str();
+    }
 };
 
 
@@ -353,6 +390,9 @@ int main(int argc, char *argv[]) {
   all.resolve_relocations();
 
   all.dump();
+
+  std::string binary = all.binary();
+  std::cout << binary << std::endl;
 
   return 0;
 }
