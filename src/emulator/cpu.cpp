@@ -1,9 +1,13 @@
 #include "cpu.hpp"
 #include <iostream>
 #include <iomanip>
+#include <stdio.h>
 
 CPU::CPU(const std::string &filename) {
   std::ifstream infile(filename);
+  if (!infile.is_open()) {
+    std::cerr << "Error: Could not open file " << filename << std::endl;
+  }
   std::string line;
 
   while (std::getline(infile, line)) {
@@ -26,6 +30,7 @@ CPU::CPU(const std::string &filename) {
       offset++;
     }
   }
+  regfile[15] = 0x40000000;
 }
 CPU::~CPU(){
   ofile.close();
@@ -33,6 +38,8 @@ CPU::~CPU(){
 
 bool CPU::execute(){
   this->ir = fetch_word(this->pc);
+  pc += 4;
+  //std::cout << std::hex << "PC: " << pc << ", IR: " << ir << std::endl;
   instruction_number++;
 
   CPU::instruction inst = decode_instruction();
@@ -45,7 +52,10 @@ bool CPU::execute(){
 
   execute_instruction(inst);
   regfile[0] = 0;
- 
+  
+  //info_registers();
+  //getchar();
+  
   if (inst == i_halt) {
     return false;
   }
@@ -55,7 +65,7 @@ bool CPU::execute(){
 void CPU::info_registers(){
 
   for (int i = 0; i < 16; ++i) {
-    ofile << "x" << std::setw(2) << std::setfill('0') << i << ": 0x"
+    std::cout << "x" << std::setw(2) << std::setfill('0') << i << ": 0x"
       << std::hex << std::setw(8)<< regfile[i] << std::dec << std::endl;
   }
 }
@@ -91,7 +101,7 @@ void CPU::info_instruction_number(){
 }
 
 uint32_t CPU::fetch_word(uint32_t address) {
-  return  (static_cast<uint32_t>(memory[address])) |
+  return (static_cast<uint32_t>(memory[address])) |
     (static_cast<uint32_t>(memory[address + 1]) << 8) |
     (static_cast<uint32_t>(memory[address + 2]) << 16) |
     (static_cast<uint32_t>(memory[address + 3]) << 24);
@@ -106,14 +116,13 @@ void CPU::store_word(uint32_t address, uint32_t value) {
 
 CPU::instruction CPU::decode_instruction() {
 
-  uint8_t OC = this->ir && 0xF0000000;
-  uint8_t MOD = this->ir && 0x0F000000;
+  uint8_t OC = (this->ir & 0xF0000000) >> 28;
+  uint8_t MOD = (this->ir & 0x0F000000) >> 24;
 
-  uint8_t REGA = this->ir && 0x00F00000;
-  uint8_t REGB = this->ir && 0x000F0000;
-  uint8_t REGC = this->ir && 0x0000F000;
+  uint8_t REGA = (this->ir & 0x00F00000) >> 20;
+  uint8_t REGB = (this->ir & 0x000F0000) >> 16;
+  uint8_t REGC = (this->ir & 0x0000F000) >> 12;
 
-  uint16_t Disp = this->ir && 0x00000FFF;
 
   switch (OC) {
     case 0x0: return i_halt;
@@ -208,13 +217,20 @@ uint32_t CPU::pop(){
 
 void CPU::execute_instruction(instruction inst){
 
-  uint8_t REGA = this->ir && 0x00F00000;
-  uint8_t REGB = this->ir && 0x000F0000;
-  uint8_t REGC = this->ir && 0x0000F000;
+  uint32_t OC = (this->ir & 0xF0000000) >> 28;
+  uint32_t MOD = (this->ir & 0x0F000000) >> 24;
 
-  uint16_t value = this->ir && 0x00000FFF;
-  uint16_t disp = (value & 0x0800) ? (value | 0xFFFFF000) : value;
+  uint32_t REGA = (this->ir & 0x00F00000) >> 20;
+  uint32_t REGB = (this->ir & 0x000F0000) >> 16;
+  uint32_t REGC = (this->ir & 0x0000F000) >> 12;
 
+  int32_t disp = (int32_t)(this->ir << 20) >> 20;
+  //std::cout << "OC: " << OC
+  //  << " MOD: " << MOD
+  //  << " REGA: " << REGA
+  //  << " REGB: " << REGB
+  //  << " REGC: " << REGC
+  //  << " disp: " << disp << std::endl;
   switch (inst) {
     case i_halt:
       return;
@@ -228,7 +244,6 @@ void CPU::execute_instruction(instruction inst){
       break;
 
     case i_iret:
-      // Handle iret instruction
       break;
 
     case i_call:
@@ -350,7 +365,7 @@ void CPU::execute_instruction(instruction inst){
     case i_ld_mem:
       regfile[REGA] = fetch_word(regfile[REGB] + regfile[REGC] + disp);
       break;
-
+      
     case i_ld_autoinc:
       regfile[REGA] = fetch_word(regfile[REGB]);
       regfile[REGB] = regfile[REGB] + disp;
