@@ -183,20 +183,6 @@ class Sections {
     }
 
     void merge(const Sections &other) {
-      for (auto *sec : other.sections) {
-        Section *dst = findOrCreateSection(sec->name);
-        uint32_t section_offset = dst->offset;
-
-        for (uint32_t i = 0; i < sec->offset; i++) {
-          dst->addByte(sec->array[i]);
-        }
-
-        for (auto *r : sec->list_of_relocations) {
-          relocation *nr = new relocation{r->offset + section_offset, r->symbol, r->addend, r->section_name};
-          dst->list_of_relocations.push_back(nr);
-        }
-
-      }
 
       std::unordered_map<std::string, symbolTableEntry *> copy(symtab.map);
       for (auto *entry : other.symtab.list) {
@@ -213,6 +199,21 @@ class Sections {
           }
 
         }
+      }
+
+      for (auto *sec : other.sections) {
+        Section *dst = findOrCreateSection(sec->name);
+        uint32_t section_offset = dst->offset;
+
+        for (uint32_t i = 0; i < sec->offset; i++) {
+          dst->addByte(sec->array[i]);
+        }
+
+        for (auto *r : sec->list_of_relocations) {
+          relocation *nr = new relocation{r->offset + section_offset, r->symbol, r->addend, r->section_name};
+          dst->list_of_relocations.push_back(nr);
+        }
+
       }
 
     }
@@ -240,7 +241,6 @@ class Sections {
 
     void place_section(std::string section_name, int place){
       if(symtab.map.contains(section_name)){
-        std::cout << "Value: " << place << std::endl;
         symtab.map[section_name]->value = place;
       }
       else
@@ -253,7 +253,6 @@ class Sections {
       for(auto& entry : symtab.list){
 
         if (entry->symbol == entry->section_name && entry->value == 0) { //this means it is a section not label
-          std::cout << "Section: " << entry->symbol << " Next: " << next << std::endl;
           entry->value = next;
           next = entry->value + map[entry->symbol]->offset;
         }
@@ -261,8 +260,13 @@ class Sections {
 
     }
 
-    void link(){
-
+    void resolve_relocations(){
+      for (auto& section : sections){
+        for (auto& entry : section->list_of_relocations){
+          section->array[entry->offset] = this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
+            + this->symtab.map[entry->symbol]->value + entry->addend;
+        }
+      }
     }
 };
 
@@ -332,7 +336,6 @@ int main(int argc, char *argv[]) {
       std::cerr << "error: cannot open file " << argv[i] << "\n";
       return 1;
     }
-
     std::ostringstream buffer;
     buffer << infile.rdbuf();
     std::string content = buffer.str();
@@ -346,6 +349,8 @@ int main(int argc, char *argv[]) {
   }
 
   all.place_all_sections();
+
+  all.resolve_relocations();
 
   all.dump();
 
