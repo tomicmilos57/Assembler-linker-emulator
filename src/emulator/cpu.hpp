@@ -89,6 +89,11 @@ enum instruction {
 
   uint32_t &pc = regfile[15];
   uint32_t &sp = regfile[14];
+
+  uint32_t &status = csrfile[0];
+  uint32_t &handler = csrfile[1];
+  uint32_t &cause = csrfile[2];
+
   uint32_t ir = 0;
   uint32_t instruction_number = 0;
  
@@ -99,6 +104,9 @@ enum instruction {
   instruction decode_instruction();
   void execute_instruction(instruction inst);
   uint32_t fetch_word(uint32_t address);
+  void store_word(uint32_t address, uint32_t value);
+  void push(uint32_t val);
+  uint32_t pop();
 };
 
 
