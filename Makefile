@@ -3,7 +3,7 @@
 all: build
 
 
-build: 
+build: clean
 	mkdir -p build
 	bison --header=build/parser.tab.h -o build/parser.tab.c misc/parser.y 
 	flex -o build/lex.yy.c misc/lex.l 
@@ -30,7 +30,7 @@ linker: run
 
 testlinker: test
 	mkdir -p build
-	g++ -o build/linker ./src/linker/*.cpp
+	g++ -std=c++20 -o build/linker ./src/linker/*.cpp
 	./build/linker ./tests/nivo-a/*.o
 
 clean:

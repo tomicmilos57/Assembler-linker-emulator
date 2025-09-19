@@ -17,6 +17,9 @@ struct symbolTableEntry {
 
 class SymbolTable {
   public:
+    std::vector<symbolTableEntry *> list;
+    std::unordered_map<std::string, symbolTableEntry *> map;
+
     void createEntry(int value, bool found, bool local, const std::string &symbol, const std::string &section) {
       auto *entry = new symbolTableEntry{value, local, found, symbol, section};
       list.push_back(entry);
@@ -34,7 +37,7 @@ class SymbolTable {
           << std::setw(8) << std::setfill('0')
           << std::hex << std::uppercase << entry->value
           << " "
-          << std::dec << 0 << " "
+          << std::dec << entry->found << " "
           << (entry->local ? "LOC " : "GLOB ")
           << entry->symbol;
 
@@ -57,7 +60,7 @@ class SymbolTable {
 
         std::string index_colon;
         std::string value_hex;
-        int dummy;
+        bool found;
         std::string bind;
         std::string symbol;
         std::string section;
@@ -66,7 +69,7 @@ class SymbolTable {
         if (index_colon.back() == ':')
           index_colon.pop_back();
 
-        if (!(ls >> value_hex >> dummy >> bind >> symbol))
+        if (!(ls >> value_hex >> found >> bind >> symbol))
           continue;
         ls >> section;
 
@@ -78,15 +81,11 @@ class SymbolTable {
         }
 
         bool local = (bind == "LOC");
-        bool found = true;
 
         table.createEntry(value, found, local, symbol, section);
       }
       return table;
     }
-
-    std::vector<symbolTableEntry *> list;
-    std::unordered_map<std::string, symbolTableEntry *> map;
 };
 
 typedef struct relocationEntry {
@@ -116,6 +115,7 @@ class Sections {
   public:
     SymbolTable symtab;
     std::vector<Section *> sections;
+    std::unordered_map<std::string, Section *> map;
 
     Section* findOrCreateSection(const std::string &name) {
       for (auto *s : sections) {
@@ -123,6 +123,7 @@ class Sections {
       }
       Section *s = new Section(name);
       sections.push_back(s);
+      map[s->name] = s;
       return s;
     }
 
@@ -165,7 +166,6 @@ class Sections {
             std::istringstream ls(line);
             relocation *r = new relocation{};
             ls >> std::hex >> r->offset >> r->symbol >> r->addend >> r->section_name;
-            std::cout << "Section name is " << r->section_name << std::endl;
             current->list_of_relocations.push_back(r);
           } else {
             std::istringstream ls(line);
@@ -183,23 +183,38 @@ class Sections {
     }
 
     void merge(const Sections &other) {
-      for (auto *entry : other.symtab.list) {
-        if (symtab.map.find(entry->symbol) == symtab.map.end()) {
-          symtab.createEntry(entry->value, entry->found, entry->local, entry->symbol, entry->section_name);
-        }
-      }
-
       for (auto *sec : other.sections) {
         Section *dst = findOrCreateSection(sec->name);
         uint32_t section_offset = dst->offset;
+
         for (uint32_t i = 0; i < sec->offset; i++) {
           dst->addByte(sec->array[i]);
         }
+
         for (auto *r : sec->list_of_relocations) {
           relocation *nr = new relocation{r->offset + section_offset, r->symbol, r->addend, r->section_name};
           dst->list_of_relocations.push_back(nr);
         }
+
       }
+
+      std::unordered_map<std::string, symbolTableEntry *> copy(symtab.map);
+      for (auto *entry : other.symtab.list) {
+        if (entry->found) {
+
+          if (copy.contains(entry->section_name)) {
+            if (entry->section_name != entry->symbol){
+              symtab.createEntry(entry->value + this->map[entry->section_name]->offset, entry->found, entry->local, entry->symbol, entry->section_name);
+            }
+          }
+
+          else{
+            symtab.createEntry(entry->value, entry->found, entry->local, entry->symbol, entry->section_name);
+          }
+
+        }
+      }
+
     }
 
     void dump() const {
@@ -221,6 +236,10 @@ class Sections {
             << r->offset << " " << r->symbol << " " << std::dec << r->addend << " " << r->section_name << "\n";
         }
       }
+    }
+
+    void link(){
+
     }
 };
 

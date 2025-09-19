@@ -73,8 +73,10 @@ void label(char* name){
   debugf("label %s:\n", name);
   if (!symtable.map.contains(name)) 
     symtable.createEntry(sections.getCurrentSection()->offset, true, true, name);
-  else
+  else {
     symtable.map[name]->value = sections.getCurrentSection()->offset;
+    symtable.map[name]->found = true;
+  }
   symtable.map[name]->section_name = sections.getCurrentSection()->name;
 }
 

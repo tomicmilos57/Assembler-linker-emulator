@@ -77,7 +77,7 @@ std::string SymbolTable::to_string() const {
     out << std::dec << i << ": "
       << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << entry->value
       << " "
-      << std::dec << 0
+      << std::dec << entry->found
       << " ";
 
 
