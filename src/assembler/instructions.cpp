@@ -69,19 +69,16 @@ void iret() {
 
 
   //STATUS
-  insert_instruction(LOAD_CSR_MEM_BC_D, STATUS, SP, 0, 0); //upisi u sstatus mem[sp]
-  insert_instruction(LOAD_GPR_B_D, SP, SP, 0, 4); //inc sp
+  insert_instruction(LOAD_CSR_MEM_BC_D, STATUS, SP, 0, 4); //csr[A]<=mem32[gpr[B]+gpr[C]+D];
 
   //PC
-  insert_instruction(LOAD_MEM_BC_D, PC, SP, 0, 0); //upisi u pc mem[sp]
-  insert_instruction(LOAD_GPR_B_D, SP, SP, 0, -4); //dec sp
+  insert_instruction(0x94, PC, SP, 0, 8); //gpr[A]<=mem32[gpr[B]]; gpr[B]<=gpr[B]+D;
 }
 
 void ret() {
   debugf("ret called\n");
  
-  insert_instruction(LOAD_MEM_BC_D, PC, SP, 0, 0); //upisi u pc mem[sp]
-  insert_instruction(LOAD_GPR_B_D, SP, SP, 0, -4); //dec sp
+  insert_instruction(LOAD_MEM_B_INC_D, PC, SP, 0, 4); //upisi PC na mem[sp] i sp+=4 u istom taktu
 }
 
 void push(char *r) {
