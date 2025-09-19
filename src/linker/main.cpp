@@ -318,7 +318,7 @@ struct PlaceOption {
 int main(int argc, char *argv[]) {
   bool hex = false;
   bool relocatable = false;
-  std::string output_file;
+  std::string output_file = "./build/binary.o";
   std::vector<PlaceOption> places;
 
   Sections all;
@@ -389,10 +389,17 @@ int main(int argc, char *argv[]) {
 
   all.resolve_relocations();
 
-  all.dump();
+  if (relocatable) {
+    all.dump();
+  }
 
   std::string binary = all.binary();
-  std::cout << binary << std::endl;
+  if (hex) {
+    std::ofstream hex;
+    hex.open(std::string(output_file));
+    hex << binary;
+    hex.close();
+  }
 
   return 0;
 }
