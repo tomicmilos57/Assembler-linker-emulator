@@ -108,6 +108,7 @@ void Section::insert_relocation(char* symbol, int addend){
   entry->offset = this->offset;
   entry->symbol = std::string(symbol);
   entry->addend = addend;
+  entry->section_name = sections.getCurrentSection()->name;
 
   list_of_relocations.push_back(entry);
 
@@ -120,6 +121,7 @@ void Section::insert_relocation(char* symbol, int addend, uint32_t custom_offset
   entry->offset = custom_offset;
   entry->symbol = std::string(symbol);
   entry->addend = addend;
+  entry->section_name = sections.getCurrentSection()->name;
 
   list_of_relocations.push_back(entry);
 
@@ -186,7 +188,8 @@ std::string Section::relocations_to_string() const {
   for (const auto &rel : list_of_relocations) {
     out << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << rel->offset << " ";
     out << rel->symbol << " ";
-    out << std::dec << rel->addend << "\n";
+    out << std::dec << rel->addend << " ";
+    out << rel->section_name << "\n";
   }
 
   return out.str();

@@ -93,6 +93,7 @@ typedef struct relocationEntry {
   uint32_t offset;
   std::string symbol;
   int addend;
+  std::string section_name;
 } relocation;
 
 class Section {
@@ -163,7 +164,8 @@ class Sections {
           if (line.find_first_not_of("0123456789ABCDEFabcdef \t") != std::string::npos) {
             std::istringstream ls(line);
             relocation *r = new relocation{};
-            ls >> std::hex >> r->offset >> r->symbol >> r->addend;
+            ls >> std::hex >> r->offset >> r->symbol >> r->addend >> r->section_name;
+            std::cout << "Section name is " << r->section_name << std::endl;
             current->list_of_relocations.push_back(r);
           } else {
             std::istringstream ls(line);
@@ -180,25 +182,20 @@ class Sections {
       return obj;
     }
 
-    // Merge another Sections object into this one
     void merge(const Sections &other) {
-      // merge symbols
       for (auto *entry : other.symtab.list) {
         if (symtab.map.find(entry->symbol) == symtab.map.end()) {
           symtab.createEntry(entry->value, entry->found, entry->local, entry->symbol, entry->section_name);
         }
       }
 
-      // merge sections
       for (auto *sec : other.sections) {
         Section *dst = findOrCreateSection(sec->name);
-        // copy bytes
         for (uint32_t i = 0; i < sec->offset; i++) {
           dst->addByte(sec->array[i]);
         }
-        // copy relocations
         for (auto *r : sec->list_of_relocations) {
-          relocation *nr = new relocation{r->offset, r->symbol, r->addend};
+          relocation *nr = new relocation{r->offset, r->symbol, r->addend, r->section_name};
           dst->list_of_relocations.push_back(nr);
         }
       }
@@ -220,7 +217,7 @@ class Sections {
         std::cout << "#.rela." << sec->name << "\n";
         for (auto *r : sec->list_of_relocations) {
           std::cout << std::setw(8) << std::setfill('0') << std::hex << std::uppercase
-            << r->offset << " " << r->symbol << " " << std::dec << r->addend << "\n";
+            << r->offset << " " << r->symbol << " " << std::dec << r->addend << " " << r->section_name << "\n";
         }
       }
     }

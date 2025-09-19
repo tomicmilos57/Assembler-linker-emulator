@@ -22,6 +22,7 @@ typedef struct relocationEntry{
   uint32_t offset;
   std::string symbol;
   int addend;
+  std::string section_name;
 
 } relocation;
 
