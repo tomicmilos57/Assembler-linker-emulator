@@ -38,8 +38,8 @@ CPU::~CPU(){
 
 bool CPU::execute(){
   this->ir = fetch_word(this->pc);
+  std::cout << std::hex << "PC: " << pc << ", IR: " << ir << std::endl;
   pc += 4;
-  //std::cout << std::hex << "PC: " << pc << ", IR: " << ir << std::endl;
   instruction_number++;
 
   CPU::instruction inst = decode_instruction();
@@ -53,8 +53,10 @@ bool CPU::execute(){
   execute_instruction(inst);
   regfile[0] = 0;
   
-  //info_registers();
-  //getchar();
+  std::cout << "My ABCD " << fetch_word(0xAC) << std::endl;
+  std::cout << "Address 0 " << fetch_word(0x00) << std::endl;
+  info_registers();
+  getchar();
   
   if (inst == i_halt) {
     return false;

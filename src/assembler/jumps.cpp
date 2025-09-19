@@ -16,9 +16,7 @@ void insert_symbol_jumps(char* sym, uint32_t instruction, uint32_t regA, uint32_
 void call_literal(int val) {
   debugf("call %d\n", val);
 
-  insert_instruction(STORE_INC_A_C_D, SP, 0, PC, -4); //oduzmi sp i upisi na mem[sp] u istom taktu
-
-  filltable.createLiteralEntry(val, LOAD_MEM_BC_D, PC, PC, R0, 0); //gpr[A]<=mem32[gpr[B]+gpr[C]+D];
+  filltable.createLiteralEntry(val, 0x21, PC, R0, R0, 0); //push pc; pc<=mem32[gpr[A]+gpr[B]+D];
   insert_instruction(0, 0, 0, 0, 0);
 }
 

@@ -255,7 +255,6 @@ expr:
           OperandNode *t = $3;
           char *buf = (char*)malloc(strlen(t->val) + 2);
           sprintf(buf, "+%s", t->val);
-          free(t->val);
           t->val = buf;
 
           OperandNode *p = $1;
@@ -267,7 +266,6 @@ expr:
           OperandNode *t = $3;
           char *buf = (char*)malloc(strlen(t->val) + 2);
           sprintf(buf, "-%s", t->val);
-          free(t->val);
           t->val = buf;
 
           OperandNode *p = $1;

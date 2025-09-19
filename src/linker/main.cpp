@@ -104,6 +104,10 @@ class Section {
     std::string name;
     std::vector<relocation *> list_of_relocations;
 
+    void insert_int(uint32_t offset, uint32_t n){
+      *(uint32_t*)&array[offset] = n;
+    }
+
     void addByte(uint8_t b) {
       if (offset < sizeof(array)) {
         array[offset++] = b;
@@ -263,8 +267,8 @@ class Sections {
     void resolve_relocations(){
       for (auto& section : sections){
         for (auto& entry : section->list_of_relocations){
-          section->array[entry->offset] = this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
-            + this->symtab.map[entry->symbol]->value + entry->addend;
+          section->insert_int(entry->offset, this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
+            + this->symtab.map[entry->symbol]->value + entry->addend);
         }
       }
     }

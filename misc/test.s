@@ -1,23 +1,18 @@
-# file: main.s
+# file: isr_software.s
 
-.global handler, my_start, my_counter
+.extern value1
 
-.section my_code
-my_start:
-    ld $0xFFFFFEFE, %sp
-    ld $handler, %r1
-    csrwr %r1, %handler
-    
-    ld $0x1, %r1
-    st %r1, 0xFFFFFF10 # tim_cfg
-wait:
-    ld my_counter, %r1
-    ld $20, %r2
-    bne %r1, %r2, wait
-    halt
-
-.section my_data
-my_counter:
-.word 0
+.section isr
+# prekidna rutina za softverski prekid
+.global isr_software
+isr_software:
+    push %r1
+    push %r2
+    ld $0xABCD, %r1
+    ld $value1, %r2
+    st %r1, [%r2]
+    pop %r2
+    pop %r1
+    ret
 
 .end

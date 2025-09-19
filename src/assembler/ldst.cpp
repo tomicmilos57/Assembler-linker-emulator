@@ -123,7 +123,7 @@ void st_mem_reg(char *r, char *reg) {
 
   int operand = get_reg(reg);
   int gpr = get_reg(r);
-  insert_instruction(STORE_MEM_AB_C_D, operand, 0, gpr, 0); //mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C];
+  insert_instruction(0x80, operand, 0, gpr, 0); //mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C];
 }
 
 void st_mem_reg_off_literal(char *r, char *reg, int val) {

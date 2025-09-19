@@ -50,7 +50,6 @@ csrwr                        { return CSRWR; }
 0[xX][0-9a-fA-F]+            { yylval.num = (int)strtol(yytext, NULL, 16); return NUMBER; }
 [0-9]+                        { yylval.num = atoi(yytext); return NUMBER; }
 
-\$[a-zA-Z_][a-zA-Z0-9_]*      { yylval.s = strdup(yytext + 1); return SYMBOL; }
 [a-zA-Z_][a-zA-Z0-9_]*        { yylval.s = strdup(yytext); return SYMBOL; }
 
 \%[a-zA-Z0-9_]+               { yylval.s = strdup(yytext + 1); return REGISTER; }

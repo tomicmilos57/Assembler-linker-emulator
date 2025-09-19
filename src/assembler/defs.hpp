@@ -4,7 +4,7 @@
 #include <string>
 #include "classes.hpp"
 
-#define LOG 0
+#define LOG 1
 #if LOG
 #define debugf(format, ...) \
     do { \

@@ -43,7 +43,7 @@ void FillTable::finnishAssembly(){
 
     patch_instruction(entry->section, entry->offset,
         entry->instruction, entry->regA, entry->regB, entry->regC,
-        entry->section->offset - entry->offset + entry->literalOffset*4);
+        entry->section->offset - entry->offset - 4 + entry->literalOffset*4);
 
     if (!entry->literal) {
       entry->section->insert_relocation(entry->symchar, 0,
@@ -183,7 +183,7 @@ std::string Section::literals_to_string() const {
 std::string Section::relocations_to_string() const {
   std::ostringstream out;
 
-  out << "#.rela." << name << "\n";
+  out << "\n#.rela." << name << "\n";
 
   for (const auto &rel : list_of_relocations) {
     out << std::setw(8) << std::setfill('0') << std::hex << std::uppercase << rel->offset << " ";
