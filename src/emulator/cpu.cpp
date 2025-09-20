@@ -153,7 +153,10 @@ void CPU::store_word(uint32_t address, uint32_t value) {
     memory[address + 3] = static_cast<uint8_t>((value >> 24) & 0xFF);
 
     if(address == 0xFFFFFF00){
-      std::cout << (char)value << std::flush;
+      std::cout << memory[address] << std::flush;
+      //std::cout << memory[address + 1] << std::flush;
+      //std::cout << memory[address + 2] << std::flush;
+      //std::cout << memory[address + 3] << std::flush;
     }
 }
 
@@ -444,13 +447,13 @@ void CPU::execute_instruction(instruction inst){
 }
 
 void CPU::set_inter(char c){
-  cause = cause | 3;
+  cause = 3;
   keyboard = 1;
   store_word(0xFFFFFF04, (uint32_t)c);
 }
 
 void CPU::set_timer_inter(){
-  cause = cause | 2;
+  cause = 2;
   timer = 1;
 }
 
