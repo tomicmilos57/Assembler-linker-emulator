@@ -73,11 +73,6 @@
 #define LOAD_CSR_MEM_BC_D 0x96 // OC=0x9, MOD=0x6 -> csr[A] <= mem32[gpr[B]+gpr[C]+D]
 #define LOAD_CSR_MEM_B_INC 0x97 // OC=0x9, MOD=0x7 -> csr[A] <= mem32[gpr[B]]; gpr[B]+=D
 
-typedef struct OperandNode {
-    char *val;
-    struct OperandNode *next;
-} OperandNode;
-
 void add_global(char *sym);
 void add_extern(char *sym);
 void set_section(char *name);

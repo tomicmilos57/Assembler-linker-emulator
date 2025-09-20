@@ -278,3 +278,81 @@ std::string FillTable::to_string() const {
 
   return out.str();
 }
+
+enum EquType {
+  EQU_LABEL,
+  EQU_NEG_LABEL,
+  EQU_INTEGER,
+  EQU_INVALID
+};
+
+struct EquResult {
+  EquType type;
+  std::string label;
+  int value;
+};
+
+EquResult classifyOperand(const char *val) {
+  EquResult res{EQU_INVALID, "", 0};
+
+  if (!val || *val == '\0')
+    return res;
+
+  std::string s(val);
+
+  if (s[0] == '-' && (s.size() > 1 && !isdigit(s[1]))) {
+    res.type = EQU_NEG_LABEL;
+    res.label = s.substr(1);
+    return res;
+  }
+
+  char *endptr = nullptr;
+  long num = strtol(s.c_str(), &endptr, 0);
+  if (*endptr == '\0') {
+    res.type = EQU_INTEGER;
+    res.value = static_cast<int>(num);
+    return res;
+  }
+
+  res.type = EQU_LABEL;
+  res.label = s;
+  return res;
+}
+
+void SymbolTable::finnishAssembly(){
+  debugf("Finnishing Assembly for equ\n");
+  for (auto& pair : equ) {
+    debugf("Finnishing Assembly for %s\n", pair.second);
+    int result = 0;
+    OperandNode *expr_list = pair.first;
+    for (OperandNode *node = expr_list; node; node = node->next) {
+      EquResult r = classifyOperand(node->val);
+
+      switch (r.type) {
+        case EQU_LABEL:
+          debugf("LABEL: %s\n", r.label.c_str());
+          if (map.contains(r.label)) {
+            result += map[r.label]->value;
+          }
+          break;
+        case EQU_NEG_LABEL:
+          debugf("NEG LABEL: %s\n", r.label.c_str());
+          if (map.contains(r.label)) {
+            result -= map[r.label]->value;
+          }
+          break;
+        case EQU_INTEGER:
+          debugf("INTEGER: %d\n", r.value);
+          result += r.value;
+          break;
+        default:
+          debugf("INVALID: %s\n", node->val);
+          break;
+      }
+    }
+    if (map.contains(std::string(pair.second))) {
+      map[pair.second]->value = result;
+    }
+  }
+}
+

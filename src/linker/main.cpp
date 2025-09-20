@@ -8,7 +8,7 @@
 #include <cstdint>
 
 struct symbolTableEntry {
-  int value;
+  uint32_t value;
   bool local;
   bool found;
   std::string symbol;
@@ -20,7 +20,7 @@ class SymbolTable {
     std::vector<symbolTableEntry *> list;
     std::unordered_map<std::string, symbolTableEntry *> map;
 
-    void createEntry(int value, bool found, bool local, const std::string &symbol, const std::string &section) {
+    void createEntry(uint32_t value, bool found, bool local, const std::string &symbol, const std::string &section) {
       auto *entry = new symbolTableEntry{value, local, found, symbol, section};
       list.push_back(entry);
       map[symbol] = entry;
@@ -73,10 +73,11 @@ class SymbolTable {
           continue;
         ls >> section;
 
-        int value = 0;
+        uint32_t value = 0;
         try {
-          value = std::stoi(value_hex, nullptr, 16);
+          value = std::stoul(value_hex, nullptr, 16);
         } catch (...) {
+          std::cout << "Exception" << std::endl;
           continue;
         }
 
@@ -175,7 +176,7 @@ class Sections {
             std::istringstream ls(line);
             std::string byteStr;
             while (ls >> byteStr) {
-              uint8_t b = static_cast<uint8_t>(std::stoi(byteStr, nullptr, 16));
+              uint8_t b = static_cast<uint8_t>(std::stoul(byteStr, nullptr, 16));
               current->addByte(b);
             }
           }
@@ -267,8 +268,18 @@ class Sections {
     void resolve_relocations(){
       for (auto& section : sections){
         for (auto& entry : section->list_of_relocations){
-          section->insert_int(entry->offset, this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
-            + this->symtab.map[entry->symbol]->value + entry->addend);
+          if (this->symtab.map.contains(entry->symbol) && this->symtab.map.contains(this->symtab.map[entry->symbol]->section_name)) {
+            section->insert_int(entry->offset, this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
+                + this->symtab.map[entry->symbol]->value + entry->addend);
+          }
+          else{
+            if(!this->symtab.map.contains(entry->symbol)){
+              std::cout << "1. This Doesnt exist: " << entry->symbol << std::endl; 
+            }
+            if(!this->symtab.map.contains(this->symtab.map[entry->symbol]->section_name))
+                std::cout << "2. This Doesnt exist: " << this->symtab.map[entry->symbol]->section_name << std::endl; 
+          }
+
         }
       }
     }

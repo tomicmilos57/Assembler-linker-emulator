@@ -26,6 +26,11 @@ typedef struct relocationEntry{
 
 } relocation;
 
+typedef struct OperandNode {
+    char *val;
+    struct OperandNode *next;
+} OperandNode;
+
 class Section {
 
 public:
@@ -65,9 +70,11 @@ public:
 class SymbolTable {
 public:
   void createEntry(int value, bool found, bool local, char* symbol);
+  void finnishAssembly();
 
   std::vector<symbolTableEntry*> list;
   std::unordered_map<std::string, symbolTableEntry*> map;
+  std::vector<std::pair<OperandNode*, char*>> equ;
   std::string to_string() const;
 };
 

@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
 
   sections.finnishAssembly();
   filltable.finnishAssembly();
+  symtable.finnishAssembly();
   print_everything(std::cout);
 
   std::ofstream assembly;

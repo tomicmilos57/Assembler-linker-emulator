@@ -31,7 +31,9 @@ linker: run
 testlinker: test
 	mkdir -p build
 	g++ -std=c++20 -o build/linker ./src/linker/*.cpp
-	./build/linker --hex --relocatable --place=my_code@0x40000000 --place=math@0xF0000000 ./tests/nivo-b/*.o
+	#./build/linker --hex --relocatable --place=my_code@0x40000000 --place=math@0xF0000000 ./tests/nivo-b/*.o
+	./build/linker --hex --relocatable --place=code@0x40000000 ./tests/nivo-c/*.o
+
 
 emu:
 	mkdir -p build

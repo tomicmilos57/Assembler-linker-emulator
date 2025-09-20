@@ -57,12 +57,19 @@ void add_ascii(char *s) {
   }
 }
 
-void define_equ(char *sym, char *val) {
-  debugf(".equ %s, %s\n", sym, val);
-}
-
 void equ(char *name, OperandNode *expr_list) { 
   debugf(".equ %s\n", name);
+
+  if (!symtable.map.contains(name)) 
+    symtable.createEntry(0, true, true, name);
+  else {
+    symtable.map[name]->value = 0;
+    symtable.map[name]->found = true;
+  }
+
+  symtable.map[name]->section_name = sections.getCurrentSection()->name;
+  symtable.equ.push_back({expr_list, name});
+
   for (OperandNode* node = expr_list; node; node = node->next) {
     debugf(", %s", node->val);
   }
