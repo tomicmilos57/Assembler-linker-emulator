@@ -69,7 +69,7 @@ void iret() {
 
 
   //STATUS
-  insert_instruction(0x96, STATUS, SP, 0, 8); //csr[A]<=mem32[gpr[B]+gpr[C]+D];
+  insert_instruction(0x96, STATUS, SP, 0, 4); //csr[A]<=mem32[gpr[B]+gpr[C]+D];
 
   //PC
   insert_instruction(0x93, PC, SP, 0, 8); //gpr[A]<=mem32[gpr[B]]; gpr[B]<=gpr[B]+D;

@@ -44,7 +44,7 @@ bool CPU::execute(){
 
   CPU::instruction inst = decode_instruction();
   if (inst == i_invalid_instruction){
-    std::cout << "INVALID INSTRUCTION OPCODE" << std::endl;
+    std::cout << "INVALID INSTRUCTION OPCODE " << std::hex << ir << std::endl;
     exit(1);
   }
 
@@ -74,7 +74,33 @@ void CPU::handle_interrupt(){
     pc = handler;
     keyboard = 0;
   }
+  if (timer == 1){
+    std::cout << "Jumping cause timer" << std::endl;
+    push(status);
+    push(pc);
+    status = status & ~0x1;
+    pc = handler;
+    timer = 0;
+  }
 }
+
+uint32_t CPU::get_timer_cfg(){
+  uint32_t mode = fetch_word(0xFFFFFF10);
+  switch (mode) {
+    case 0x0: return 500;
+    case 0x1: return 1000;
+    case 0x2: return 1500;
+    case 0x3: return 2000;
+    case 0x4: return 5000;
+    case 0x5: return 10000;
+    case 0x6: return 30000;
+    case 0x7: return 60000;
+
+    default: return 500;
+  }
+  return 500;
+}
+
 void CPU::info_registers(){
 
   for (int i = 0; i < 16; ++i) {
@@ -422,3 +448,9 @@ void CPU::set_inter(char c){
   keyboard = 1;
   store_word(0xFFFFFF04, (uint32_t)c);
 }
+
+void CPU::set_timer_inter(){
+  cause = cause | 2;
+  timer = 1;
+}
+

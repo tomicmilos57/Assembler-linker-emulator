@@ -9,9 +9,11 @@ int main(){
   //cpu.info_registers();
   int count = 0;
   Console console(cpu);
+  Timer timer(cpu);
   while (true) {
-      console.simulate_input();
-      count = 0;
+    console.simulate_input();
+    timer.simulate_timer();
+
     if(!cpu.execute()) break;
 
     count++;

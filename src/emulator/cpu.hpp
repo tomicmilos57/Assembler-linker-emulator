@@ -22,8 +22,11 @@ public:
   void info_instruction_number();
   void printMemory();
   void set_inter(char c);
+  void set_timer_inter();
+  uint32_t get_timer_cfg();
   void handle_interrupt();
   bool keyboard = 0;
+  bool timer = 0;
 
 private:
 enum instruction {

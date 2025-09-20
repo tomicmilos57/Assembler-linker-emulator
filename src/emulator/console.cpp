@@ -42,3 +42,18 @@ void Console::setNonBlockingInput(bool enable) {
     isEnabled = false;
   }
 }
+
+Timer::Timer(CPU& cpu) : cpu(cpu) {
+  begin = std::chrono::steady_clock::now();
+}
+
+void Timer::simulate_timer(){
+  end = std::chrono::steady_clock::now();
+
+  if(cpu.get_timer_cfg() < std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()){
+    //std::cout << "Timer tick " << cpu.get_timer_cfg() << std::endl;
+    begin = std::chrono::steady_clock::now();
+    cpu.set_timer_inter();
+  }
+
+}
