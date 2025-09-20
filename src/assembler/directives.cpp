@@ -55,6 +55,12 @@ void add_ascii(char *s) {
   for(char c : str) {
     sections.getCurrentSection()->insert_byte((uint8_t)c);
   }
+  //size_t offset = str.size();
+  //size_t padding = (4 - (offset % 4)) % 4;
+
+  //for (size_t i = 0; i < padding; i++) {
+  //  sections.getCurrentSection()->insert_byte(0x00);
+  //}
 }
 
 void equ(char *name, OperandNode *expr_list) { 

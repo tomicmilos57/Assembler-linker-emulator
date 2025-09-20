@@ -199,7 +199,12 @@ class Sections {
 
           if (copy.contains(entry->section_name)) {
             if (entry->section_name != entry->symbol){
-              symtab.createEntry(entry->value + this->map[entry->section_name]->offset, entry->found, entry->local, entry->symbol, entry->section_name, entry->equ);
+              if (!entry->equ) {
+                symtab.createEntry(entry->value + this->map[entry->section_name]->offset, entry->found, entry->local, entry->symbol, entry->section_name, entry->equ);
+              }
+              else{
+                symtab.createEntry(entry->value, entry->found, entry->local, entry->symbol, entry->section_name, entry->equ);
+              }
             }
           }
 
