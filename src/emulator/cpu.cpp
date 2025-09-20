@@ -75,7 +75,7 @@ void CPU::handle_interrupt(){
     keyboard = 0;
   }
   if (timer == 1){
-    std::cout << "Jumping cause timer" << std::endl;
+    //std::cout << "Jumping cause timer" << std::endl;
     push(status);
     push(pc);
     status = status & ~0x1;

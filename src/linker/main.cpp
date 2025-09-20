@@ -13,6 +13,7 @@ struct symbolTableEntry {
   bool found;
   std::string symbol;
   std::string section_name = "";
+  bool equ;
 };
 
 class SymbolTable {
@@ -20,8 +21,8 @@ class SymbolTable {
     std::vector<symbolTableEntry *> list;
     std::unordered_map<std::string, symbolTableEntry *> map;
 
-    void createEntry(uint32_t value, bool found, bool local, const std::string &symbol, const std::string &section) {
-      auto *entry = new symbolTableEntry{value, local, found, symbol, section};
+    void createEntry(uint32_t value, bool found, bool local, const std::string &symbol, const std::string &section, bool equ) {
+      auto *entry = new symbolTableEntry{value, local, found, symbol, section, equ};
       list.push_back(entry);
       map[symbol] = entry;
     }
@@ -44,6 +45,7 @@ class SymbolTable {
         if (!entry->section_name.empty())
           out << " " << entry->section_name;
 
+        out << " " << entry->equ;
         out << "\n";
       }
 
@@ -64,6 +66,7 @@ class SymbolTable {
         std::string bind;
         std::string symbol;
         std::string section;
+        bool equ;
 
         ls >> index_colon;
         if (index_colon.back() == ':')
@@ -72,6 +75,7 @@ class SymbolTable {
         if (!(ls >> value_hex >> found >> bind >> symbol))
           continue;
         ls >> section;
+        ls >> equ;
 
         uint32_t value = 0;
         try {
@@ -83,7 +87,7 @@ class SymbolTable {
 
         bool local = (bind == "LOC");
 
-        table.createEntry(value, found, local, symbol, section);
+        table.createEntry(value, found, local, symbol, section, equ);
       }
       return table;
     }
@@ -195,12 +199,12 @@ class Sections {
 
           if (copy.contains(entry->section_name)) {
             if (entry->section_name != entry->symbol){
-              symtab.createEntry(entry->value + this->map[entry->section_name]->offset, entry->found, entry->local, entry->symbol, entry->section_name);
+              symtab.createEntry(entry->value + this->map[entry->section_name]->offset, entry->found, entry->local, entry->symbol, entry->section_name, entry->equ);
             }
           }
 
           else{
-            symtab.createEntry(entry->value, entry->found, entry->local, entry->symbol, entry->section_name);
+            symtab.createEntry(entry->value, entry->found, entry->local, entry->symbol, entry->section_name, entry->equ);
           }
 
         }
@@ -269,8 +273,15 @@ class Sections {
       for (auto& section : sections){
         for (auto& entry : section->list_of_relocations){
           if (this->symtab.map.contains(entry->symbol) && this->symtab.map.contains(this->symtab.map[entry->symbol]->section_name)) {
-            section->insert_int(entry->offset, this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
-                + this->symtab.map[entry->symbol]->value + entry->addend);
+
+            if (!this->symtab.map[entry->symbol]->equ) {
+              section->insert_int(entry->offset, this->symtab.map[this->symtab.map[entry->symbol]->section_name]->value
+                  + this->symtab.map[entry->symbol]->value + entry->addend);
+            }
+            else{ //equ
+              section->insert_int(entry->offset, this->symtab.map[entry->symbol]->value + entry->addend);
+            }
+
           }
           else{
             if(!this->symtab.map.contains(entry->symbol)){

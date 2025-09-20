@@ -14,6 +14,7 @@ typedef struct symbolTableEntry{
   bool found;
   std::string symbol;
   std::string section_name = "";
+  bool equ = false;
 
 } symbolTableEntry;
 

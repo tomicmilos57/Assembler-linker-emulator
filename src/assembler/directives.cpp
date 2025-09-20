@@ -68,6 +68,7 @@ void equ(char *name, OperandNode *expr_list) {
   }
 
   symtable.map[name]->section_name = sections.getCurrentSection()->name;
+  symtable.map[name]->equ = true;
   symtable.equ.push_back({expr_list, name});
 
   for (OperandNode* node = expr_list; node; node = node->next) {

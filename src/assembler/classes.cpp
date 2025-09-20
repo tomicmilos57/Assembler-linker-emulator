@@ -85,7 +85,10 @@ std::string SymbolTable::to_string() const {
 
     out << entry->symbol << " ";
 
-    out << entry->section_name << "\n";
+    out << entry->section_name << " ";
+
+    out << entry->equ << "\n";
+
   }
 
   return out.str();
